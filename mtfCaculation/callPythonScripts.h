@@ -33,10 +33,12 @@ QVector<int> callPython(const std::vector<std::vector<std::vector<double>>>& img
                         const double& pixelSize)
 {
     class PyThreadStateLock PyThreadLock;
+    Py_SetPythonHome(L"/Users/wanncye/opt/anaconda3/envs/qt/bin");
     Py_Initialize();
 
     PyRun_SimpleString("import sys");
-    PyRun_SimpleString("sys.path.append('D:/projects/Vision_Tools_Set/MTFTool/mtfCaculation')");
+    PyRun_SimpleString("sys.path.append('/Users/wanncye/Desktop/MTF/mtfCaculation')");
+
 
     PyObject* pModule = PyImport_ImportModule("example");
     if (pModule == nullptr) {
@@ -102,7 +104,7 @@ QVector<int> callPython(const std::vector<std::vector<std::vector<double>>>& img
             Py_DECREF(listItem);
         }
     }
-
+    qDebug() << "errRoiId.size:" << errRoiId.size();
     // int res = 0;
     // PyArg_Parse(pRet, "i", &res);
     Py_DECREF(pRet);
