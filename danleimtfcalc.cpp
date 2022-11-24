@@ -24,6 +24,13 @@ DanLeiMTFCalc::DanLeiMTFCalc(QWidget* parent) : QWidget(parent), ui(new Ui::DanL
     this->setWindowTitle(QStringLiteral("MTF Tool"));
 
     ui->c0CB->setEnabled(false);
+    ui->ne1CB->setChecked(true);
+    ui->nw2CB->setChecked(true);
+    ui->sw3CB->setChecked(true);
+    ui->se9CB->setChecked(true);
+    ui->sw3CB->setChecked(true);
+    ui->sw8CB->setChecked(true);
+    ui->isSaveCheck->setChecked(true);
     ui->isAutoRB->setChecked(true);
     ui->visualFieldAssistCB->setEnabled(false);
     ui->ipOrMmRB->setChecked(true);
@@ -105,6 +112,7 @@ void DanLeiMTFCalc::on_pushButton_clicked()
                                        roi.rect.bottomRight().x(), roi.rect.bottomRight().y(),
                                        roi.offset, (double)roi.d, (double)isSaveToExcel});
             }
+            qDebug() << "information.size:" << information.size();
             QString fileName =
                 strPathList[i].mid(strPathList[i].lastIndexOf(QLatin1String("/")) + 1);
             QVector<int> errRoiId(callPython(img, information, std::string("result.xlsx"),
@@ -137,11 +145,11 @@ void DanLeiMTFCalc::on_pushButton_clicked()
                 switch (result) {
                 case QMessageBox::Yes:
                 {
-                    roiSelectionWindow = new ROISelectionWindow(strPathList.at(i), false, ROIW,
-                                                                ROIH, errRectf, trueRectf, nullptr);
-                    roiSelectionWindow->show();
-                    result = processCode();
-                    roiSelectionWindow->close();
+//                    roiSelectionWindow = new ROISelectionWindow(strPathList.at(i), false, ROIW,
+//                                                                ROIH, errRectf, trueRectf, nullptr);
+//                    roiSelectionWindow->show();
+//                    result = processCode();
+//                    roiSelectionWindow->close();
                     //对每个异常进行手动处理
                     while (!errROI.isEmpty() && result != QMessageBox::Cancel) {
                         roiSelectionWindow =
@@ -155,13 +163,11 @@ void DanLeiMTFCalc::on_pushButton_clicked()
                             if (calcMTF(signleRoiRect, strPathList.at(i), false)) {
                                 errROI.pop_front();
                                 errRectf.pop_front();
-                                trueROI.push_front(
-                                    signleRoiRect.front()); //正确的roi保留 同时删除错误
+                                trueROI.push_front(signleRoiRect.front()); //正确的roi保留 同时删除错误
                             } else {
                                 result = processCode();
                                 if (result == QMessageBox::No) {
-                                    trueROI.push_back(
-                                        errROI.front()); // NO处理 则对错误的roi保留
+                                    trueROI.push_back(errROI.front()); // NO处理 则对错误的roi保留
                                                          // cancel是什么都不错 既不保存 也不处理
                                     errROI.pop_front();
                                     errRectf.pop_front();

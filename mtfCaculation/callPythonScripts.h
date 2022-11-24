@@ -101,6 +101,7 @@ QVector<int> callPython(const std::vector<std::vector<std::vector<double>>>& img
         for (int i = 0; i < sizeOfList; i++) {
             PyObject* listItem = PyList_GetItem(pRet, i);
             errRoiId.push_back(PyLong_AsLong(listItem));
+            qDebug() << "error list PyLong_AsLong(listItem)" << PyLong_AsLong(listItem);
             Py_DECREF(listItem);
         }
     }

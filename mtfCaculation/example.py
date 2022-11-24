@@ -24,6 +24,7 @@ def writeToExcelFile(fileName: str, data: tuple, imgName: str='') -> bool:
 
         df = pd.DataFrame(formatData, index=Attributes)
 
+        print(os.path)
         if os.path.exists(fileName):
             writer = pd.ExcelWriter(fileName, mode='a', engine='openpyxl')
             wb = writer.book
@@ -34,10 +35,12 @@ def writeToExcelFile(fileName: str, data: tuple, imgName: str='') -> bool:
 
         df.to_excel(writer, sheet_name=imgName)
         writer.save()
-
+        print("in writeToExcelFile fileName",fileName)
+        writer.close()
         return True
 
     except Exception as e:
+        print("error! in writeToExcelFile")
         print(e)
         return False
 
@@ -126,6 +129,8 @@ def main(imgTuple: tuple, positions: tuple, fileNameTuple: tuple, pixelSize: flo
     #      return cnt
 
 def test_main(imgTuple: tuple, positions: tuple, fileNameTuple: tuple, pixelSize: float):
+#    stdout = open("mtflog.txt", "w")
+    print("start test_main", flush = True)
     try:
         imgLen = len(imgTuple)
         cnt = imgLen
@@ -149,8 +154,8 @@ def test_main(imgTuple: tuple, positions: tuple, fileNameTuple: tuple, pixelSize
                 if res.y[index] > 1.0000000000000002 or res.y[index] <= 0 or res.y[index]<res.y[index+1]:
                     mtf_err = 1 #MTF计算错误
             position = positions[i]
-            print(position)
-            print(position[6])
+            print("all position:", position, flush = True)
+            print("position[6]", position[6], flush = True)
             if (len(position) != 7):
                 raise ValueError('Positions Error!')
 
@@ -183,14 +188,18 @@ def test_main(imgTuple: tuple, positions: tuple, fileNameTuple: tuple, pixelSize
             data.append(tmpData)
 
 
-        isSaved =  writeToExcelFile(saveFileName, data, imgName=imgName)
+#        isSaved =  writeToExcelFile(saveFileName, data, imgName=imgName)
+        isSaved =  writeToExcelFile(saveFileName, data)
         if not isSaved:
-            print('Cannot save!')
+            print('Cannot save!', flush = True)
+        else:
+            print("save sucessfully!", flush = True)
         return errRoiId
 
 
 
     except Exception as e:
-        print(e)
+        print("error!!!!!!!!! in test_main", flush = True)
+        print(e, flush = True)
         return cnt
 

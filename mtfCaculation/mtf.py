@@ -539,7 +539,7 @@ class MTF:
         FinalDistances = np.linspace(0,int(x_num_raw/2)-1,int(x_num_raw/2))
         
         valueAtNyquist = interpValues[int(x_num_raw/2)-1]
-        print(FinalDistances)
+        #print("FinalDistances:", FinalDistances)
 
         if (verbose == Verbosity.BRIEF):
             print("MTF [done]")
