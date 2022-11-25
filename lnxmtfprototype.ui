@@ -22,9 +22,12 @@
   <property name="autoFillBackground">
    <bool>false</bool>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout_4">
+  <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="3,1">
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout_10">
+    <layout class="QVBoxLayout" name="imgPart">
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
      <item>
       <widget class="QGroupBox" name="groupBox_4">
        <property name="title">
@@ -32,10 +35,35 @@
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_11">
         <item>
-         <widget class="QLabel" name="imgView">
-          <property name="text">
-           <string>Please Choose Image</string>
+         <widget class="QScrollArea" name="scrollArea">
+          <property name="widgetResizable">
+           <bool>true</bool>
           </property>
+          <widget class="QWidget" name="scrollAreaWidgetContents">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>370</width>
+             <height>416</height>
+            </rect>
+           </property>
+           <property name="layoutDirection">
+            <enum>Qt::LeftToRight</enum>
+           </property>
+           <layout class="QGridLayout" name="gridLayout">
+            <item row="0" column="0">
+             <widget class="LabelPainterTool" name="imgView">
+              <property name="text">
+               <string>Please Choose Image</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
          </widget>
         </item>
        </layout>
@@ -51,7 +79,7 @@
     </layout>
    </item>
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout">
+    <layout class="QVBoxLayout" name="operatorPart">
      <property name="sizeConstraint">
       <enum>QLayout::SetMaximumSize</enum>
      </property>
@@ -89,7 +117,7 @@
          </layout>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton_2">
+         <widget class="QPushButton" name="calcMTF">
           <property name="text">
            <string>Calculate MTF</string>
           </property>
@@ -249,6 +277,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>LabelPainterTool</class>
+   <extends>QLabel</extends>
+   <header location="global">labelpaintertool.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

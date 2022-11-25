@@ -15,6 +15,10 @@ public:
     explicit LNXMTFPrototype(QWidget *parent = nullptr);
     ~LNXMTFPrototype();
 
+public slots:
+    void on_loadImg_clicked(); // 加载图片
+    void on_calcMTF_clicked();
+
 private:
     Ui::LNXMTFPrototype *ui;
 };

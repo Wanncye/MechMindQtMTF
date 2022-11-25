@@ -18,6 +18,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     danleimtfcalc.cpp \
+    labelpaintertool.cpp \
     lnxmtfprototype.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -27,6 +28,7 @@ SOURCES += \
 HEADERS += \
     danleimtfcalc.h \
     danleimtfcalc.h \
+    labelpaintertool.h \
     lnxmtfprototype.h \
     mainwindow.h \
     mtfcalc.h \
