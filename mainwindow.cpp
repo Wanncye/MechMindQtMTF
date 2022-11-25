@@ -1,5 +1,6 @@
 #include "ui_mainwindow.h"
 #include "danleimtfcalc.h"
+#include "lnxmtfprototype.h"
 #include "mainwindow.h"
 #include "mtfcalc.h"
 
@@ -23,4 +24,9 @@ void MainWindow::on_mtfCalc_clicked(){
 void MainWindow::on_danLeiMTFCalc_clicked(){
     auto danLeiMTF = new DanLeiMTFCalc();
     danLeiMTF->show();
+}
+
+void MainWindow::on_lnxPrototype_clicked(){
+    auto lnxPrototype = new LNXMTFPrototype();
+    lnxPrototype->show();
 }

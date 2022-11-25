@@ -18,6 +18,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     danleimtfcalc.cpp \
+    lnxmtfprototype.cpp \
     main.cpp \
     mainwindow.cpp \
     mtfcalc.cpp \
@@ -26,6 +27,7 @@ SOURCES += \
 HEADERS += \
     danleimtfcalc.h \
     danleimtfcalc.h \
+    lnxmtfprototype.h \
     mainwindow.h \
     mtfcalc.h \
     ROISelectionWindow.h\
@@ -36,6 +38,7 @@ FORMS += \
     danleimtfcalc.ui \
     danleimtfcalc.ui \
     ROISelectionWindow.ui \
+    lnxmtfprototype.ui \
     mainwindow.ui \
     mtfcalc.ui
 
