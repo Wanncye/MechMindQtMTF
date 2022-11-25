@@ -98,7 +98,6 @@ ROISelectionWindow::ROISelectionWindow(const QString& imgPath, const QRectF& err
     isManual = isManualFlag;
     onLoadImage(imgPath);
     selectedROIRectIndex = -1;
-
     isEditROIRect = true;
 
     offsetW = -mImage.width() / 2.0;
@@ -241,6 +240,8 @@ void ROISelectionWindow::onLoadImage(const QString& image)
         return;
 
     mImage.load(image);
+
+//    mImage.scaled(800,600,Qt::IgnoreAspectRatio,Qt::FastTransformation);
 }
 
 void ROISelectionWindow::onZoomInImage(void)

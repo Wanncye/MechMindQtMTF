@@ -331,9 +331,9 @@ class MTF:
 
             fig = pylab.gcf()
             fig.canvas.manager.set_window_title('Raw ESF')
-            (ax1, ax2) = plt.subplots(2)
+            ax1, ax2 = plt.subplots(2)
             ax1.imshow(imgArr, cmap='gray', vmin=0.0, vmax=1.0)
-            ax1.plot(x, y, color='red')
+            ax2.plot(x, y, color='red')
             ax2.plot(distances, values)
             plt.show()
             plt.show(block=False)
@@ -414,10 +414,10 @@ class MTF:
 
             fig = pylab.gcf()
             fig.canvas.manager.set_window_title('ESF Crop')
-            (ax1, ax2) = plt.subplots(2)
-            ax1.imshow(imgArr, cmap='gray', vmin=0.0, vmax=1.0)
-            ax1.plot(x, y, color='red')
-            ax2.plot(esfRaw.x, esfRaw.y,InterpDistances,InterpValues)
+            _, maxes = plt.subplots(2)
+            maxes[0].imshow(imgArr, cmap='gray', vmin=0.0, vmax=1.0)
+            maxes[0].plot(x, y, color='red')
+            maxes[1].plot(esfRaw.x, esfRaw.y,InterpDistances,InterpValues)
             plt.show(block=False)
             plt.show()
 
@@ -456,9 +456,9 @@ class MTF:
         elif (verbose == Verbosity.DETAIL):
             fig = pylab.gcf()
             fig.canvas.manager.set_window_title("ESF Simplification (Size from {0:d} to {1:d})".format(np.size(esf.x), np.size(distances)))
-            (ax1, ax2) = plt.subplots(2)
-            ax1.plot(esf.x, esf.y)
-            ax2.plot(distances, values)
+            _, maxes = plt.subplots(2)
+            maxes[0].plot(esf.x, esf.y)
+            maxes[1].plot(distances, values)
             plt.show(block=False)
             plt.show()
 
@@ -499,7 +499,7 @@ class MTF:
         elif (verbose == Verbosity.DETAIL):
             fig = pylab.gcf()
             fig.canvas.manager.set_window_title("LSF")
-            (ax1) = plt.subplots(1)
+            _, ax1 = plt.subplots(1)
             ax1.plot(lsfDistances, lsfValues)
             plt.show(block=False)
             plt.show()
@@ -547,7 +547,7 @@ class MTF:
         elif (verbose == Verbosity.DETAIL):
             fig = pylab.gcf()
             fig.canvas.manager.set_window_title("MTF ({0:2.2f}% at Nyquist)".format(valueAtNyquist))
-            (ax1) = plt.subplots(1)
+            _, ax1 = plt.subplots(1)
             ax1.plot(interpDistances, interpValues)
             #ax1.plot( values)
             plt.show(block=False)

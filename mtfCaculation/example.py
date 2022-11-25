@@ -7,6 +7,9 @@ import os
 
 
 def writeToExcelFile(fileName: str, data: tuple, imgName: str='') -> bool:
+    # pandas的版本得是1.2.5
+    absPath = "/Users/wanncye/Desktop/MTF"
+    fileName = os.path.join(absPath, fileName)
     if len(data) == 0:
         return False
     if len(imgName) == 0:
@@ -23,13 +26,14 @@ def writeToExcelFile(fileName: str, data: tuple, imgName: str='') -> bool:
             formatData[columns[index]] = data[index]
 
         df = pd.DataFrame(formatData, index=Attributes)
-
-        print(os.path)
+        print("current path:", os.getcwd())
         if os.path.exists(fileName):
             writer = pd.ExcelWriter(fileName, mode='a', engine='openpyxl')
             wb = writer.book
             if imgName in wb:
+                print("remove sheet:", imgName)
                 wb.remove(wb[imgName])
+                print(" wb.sheetnames:", wb.sheetnames)
         else:
             writer = pd.ExcelWriter(fileName, mode='w', engine='openpyxl')
 
@@ -150,6 +154,7 @@ def test_main(imgTuple: tuple, positions: tuple, fileNameTuple: tuple, pixelSize
             imgArr = np.asarray(imgTuple[i],dtype=np.double) / 255
             imgArr = mtf.Helper.CorrectImageOrientation(imgArr) #保证图片暗面朝上 与原模块处理一样
             res = mtf.MTF.CalculateMtf(imgArr, pixel_width)
+            print("mtf len: ", len(res.x))
             for index in range(len(res.x)-1):
                 if res.y[index] > 1.0000000000000002 or res.y[index] <= 0 or res.y[index]<res.y[index+1]:
                     mtf_err = 1 #MTF计算错误
@@ -175,6 +180,7 @@ def test_main(imgTuple: tuple, positions: tuple, fileNameTuple: tuple, pixelSize
             diredict ={0:"ne",1:"nw",2:"sw",3:"se"}
             dire = diredict[position[5]]
             if deg_err or mtf_err or over_exp_err or edge_estim_err:
+                print("exist deg_err or mtf_err or over_exp_err or edge_estim_err!")
                 errRoiId.append(i)
                 find_err = 1
             isSaveFlag = int(position[6])
@@ -188,8 +194,7 @@ def test_main(imgTuple: tuple, positions: tuple, fileNameTuple: tuple, pixelSize
             data.append(tmpData)
 
 
-#        isSaved =  writeToExcelFile(saveFileName, data, imgName=imgName)
-        isSaved =  writeToExcelFile(saveFileName, data)
+        isSaved =  writeToExcelFile(saveFileName, data, imgName=imgName)
         if not isSaved:
             print('Cannot save!', flush = True)
         else:

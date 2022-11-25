@@ -152,8 +152,7 @@ void DanLeiMTFCalc::on_pushButton_clicked()
 //                    roiSelectionWindow->close();
                     //对每个异常进行手动处理
                     while (!errROI.isEmpty() && result != QMessageBox::Cancel) {
-                        roiSelectionWindow =
-                            new ROISelectionWindow(strPathList.at(i), errRectf.front(), true);
+                        roiSelectionWindow = new ROISelectionWindow(strPathList.at(i), errRectf.front(), true);
                         connect(roiSelectionWindow, &ROISelectionWindow::sendConfirmImgs, this,
                                 &DanLeiMTFCalc::getNewImgs);
                         roiSelectionWindow->exec();
