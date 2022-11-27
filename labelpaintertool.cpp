@@ -18,6 +18,30 @@ void LabelPainterTool::mousePressEvent(QMouseEvent *e){
 }
 void LabelPainterTool::mouseMoveEvent(QMouseEvent *e){}    //鼠标移动
 void LabelPainterTool::mouseReleaseEvent(QMouseEvent *e){} //鼠标抬起
+void LabelPainterTool::wheelEvent(QWheelEvent* event)
+{
+    int value = event->angleDelta().y();
+    if (value > 0)
+        onZoomInImage();
+    else
+        onZoomOutImage();
+    update();
+}
+
+void LabelPainterTool::onZoomInImage(void){
+    rectProcessor->mZoomValue += 0.2;
+    if (rectProcessor->mZoomValue >= 2) {
+        rectProcessor->mZoomValue = 2;
+    }
+}
+
+void LabelPainterTool::onZoomOutImage(void){
+    rectProcessor->mZoomValue -= 0.2;
+    if (rectProcessor->mZoomValue <= 1) {
+        rectProcessor->mZoomValue = 1;
+    }
+}
+
 void LabelPainterTool::addRectangle(QRectF rect){
     mRects.push_back(rect);
 }

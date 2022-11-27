@@ -25,6 +25,8 @@ struct roiRect
     QRectF rect;
 };
 
+class myRectProcessor;
+
 class LabelPainterTool : public QLabel
 {
     //Q_OBJECT
@@ -32,20 +34,30 @@ public:
     explicit LabelPainterTool(QWidget *parent = nullptr);
     ~LabelPainterTool();
 
-    void paintEvent(QPaintEvent *event);    //绘制矩形
-    void mousePressEvent(QMouseEvent *e);   //鼠标按下
-    void mouseMoveEvent(QMouseEvent *e);    //鼠标移动
-    void mouseReleaseEvent(QMouseEvent *e); //鼠标抬起
+    void paintEvent(QPaintEvent *event) override;    //绘制矩形
+    void mousePressEvent(QMouseEvent *e) override;   //鼠标按下
+    void mouseMoveEvent(QMouseEvent *e) override;    //鼠标移动
+    void mouseReleaseEvent(QMouseEvent *e) override; //鼠标抬起
+    void wheelEvent(QWheelEvent* event) override;
+
+    void onZoomInImage(void);
+    void onZoomOutImage(void);
+
     void addRectangle(QRectF rect);
     void addRectangle(int x, int y, int h, int w);
     void addRectangle(QVector<roiRect> roiRects);
 
+    void setRectProcessor(myRectProcessor* processor){rectProcessor = processor;}
+    myRectProcessor* getRectProcessor(){return rectProcessor;}
+
 private:
     QVector<QRectF> mRects;
+    myRectProcessor* rectProcessor;
 };
 
 class myRectProcessor{
 public:
+    friend class LabelPainterTool;
     myRectProcessor() = default;
     // 根据roiPos的布尔值得到img对应的所有ROI区域
     QVector<roiRect> getRoIRects(const QImage& img, const QVector<QVector<bool>>& roiPos,
