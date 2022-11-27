@@ -11,6 +11,8 @@ LNXMTFPrototype::LNXMTFPrototype(QWidget *parent) :
     ui(new Ui::LNXMTFPrototype)
 {
     ui->setupUi(this);
+    ui->roiWidth->setValue(50);
+    ui->roiHeight->setValue(80);
 }
 
 LNXMTFPrototype::~LNXMTFPrototype()
@@ -37,13 +39,22 @@ void LNXMTFPrototype::on_loadImg_clicked()
         QMessageBox::information(this,tr("提示框"),tr("打开图像失败!"));
         return;
     }
-
     ui->imgView->setPixmap(QPixmap::fromImage(img));
-    ui->imgView->addRangle(0, 0, 50, 50);
-    ui->imgView->addRangle(0, 0, 40, 60);
+
+    // 要在图上画好13个ROI框
+    myRectProcessor rectProcessor;
+    QVector<QVector<bool>> roiBool = {{true, true, false, false, true, false, false, false, true},
+                                      {true, true, false, false, true, false, false, false, true},
+                                      {true, true, false, false, true, false, false, false, true},
+                                      {true, true, false, false, true, false, false, false, true}};
+    qDebug() << "img.width():" << img.width();
+    qDebug() << "img.height():" << img.height();
+    QVector<roiRect> allROI = rectProcessor.getRoIRects(img, roiBool, img.width(), img.height(), ui->roiWidth->value(), ui->roiHeight->value());
+    ui->imgView->addRectangle(allROI);
+    ui->imgView->update();
 }
 
 void LNXMTFPrototype::on_calcMTF_clicked(){
-    ui->imgView->addRangle(0, 0, 90, 90);
+    ui->imgView->addRectangle(0, 0, 90, 90);
     ui->imgView->update();
 }

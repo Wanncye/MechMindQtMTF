@@ -152,6 +152,7 @@ void DanLeiMTFCalc::on_pushButton_clicked()
 //                    roiSelectionWindow->close();
                     //对每个异常进行手动处理
                     while (!errROI.isEmpty() && result != QMessageBox::Cancel) {
+                        // 生成这个，是为了得到用户选择的框
                         roiSelectionWindow = new ROISelectionWindow(strPathList.at(i), errRectf.front(), true);
                         connect(roiSelectionWindow, &ROISelectionWindow::sendConfirmImgs, this,
                                 &DanLeiMTFCalc::getNewImgs);
@@ -222,6 +223,7 @@ int DanLeiMTFCalc::processCode()
         QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
 }
 
+// 调用python脚本计算roiRects里面的MTF值
 bool DanLeiMTFCalc::calcMTF(const QVector<roiRect>& roiRects, const QString& strPath,
                                      bool isSave)
 {

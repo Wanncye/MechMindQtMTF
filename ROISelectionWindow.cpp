@@ -6,21 +6,21 @@
 #include "ROISelectionWindow.h"
 #include "ui_ROISelectionWindow.h"
 
-int selectedROIRectIndex = -1;
-double offsetW = 0;
-double offsetH = 0;
-double mXPtInterval = 0;
-double mYPtInterval = 0;
-qreal mZoomValue = 1.0;
+int selectedROIRectIndex = -1; // 鼠标点击时、选择ROI的下标索引
+double offsetW = 0; // 以中心点为坐标轴时坐标转化参数
+double offsetH = 0; // 以中心点为坐标轴时坐标转化参数
+double mXPtInterval = 0;    // 移动画面的X偏移
+double mYPtInterval = 0;    // 移动画面的y偏移
+qreal mZoomValue = 1.0; // 放大缩小系数
 
-QPointF mOldPos;
+QPointF mOldPos;    // 鼠标点击的时候的坐标
 QRectF imageRect;
 
 static QVector<QRectF> errROIRects;
 static QVector<QRectF> trueROIRects;
 
 bool mPressed = false;
-bool isEditROIRect;
+bool isEditROIRect; // 是否处于选取ROI矩形的状态，否的话，就是移动画面
 
 void normalizeInterval(const double& width, const double& height);
 
@@ -45,9 +45,11 @@ inline QRectF rectToAbsolutePos(const QRectF& rect)
 
 inline QRectF fromCenterPoint(const QPointF& centerPoint, double width, double height)
 {
+    // 用中心点以及ROI的长宽得到矩形的左上和右下的点
     return {centerPoint.x() - width / 2.0, centerPoint.y() - height / 2.0, width, height};
 };
 
+// 一般是自动计算的时候调用这个，会设置ROI的长和宽
 ROISelectionWindow::ROISelectionWindow(const QString& imgPath, const bool& isManualFlag,
                                        const int& roiW, const int& roiH,
                                        const QVector<QRectF>& errorROI,
@@ -67,7 +69,7 @@ ROISelectionWindow::ROISelectionWindow(const QString& imgPath, const bool& isMan
     offsetH = -mImage.height() / 2.0;
 
     if (!isManualFlag) {
-        qDebug() << "isMannual ";
+        qDebug() << "is Mannual ";
         for (auto rect : errorROI)
             errROIRects.append(rectToRelativePos(rect));
         for (auto rect : trueROI)
@@ -83,13 +85,15 @@ ROISelectionWindow::ROISelectionWindow(const QString& imgPath, const bool& isMan
     setWindowFlags(Qt::WindowCloseButtonHint | Qt::MSWindowsFixedSizeDialogHint);
 }
 
+// 两个无关紧要的构造函数
 ROISelectionWindow::ROISelectionWindow(QWidget*) : ROISelectionWindow(QLatin1String(""), false) {}
-
+// 两个无关紧要的构造函数
 ROISelectionWindow::ROISelectionWindow(const QString& imgPath, QWidget*)
     : ROISelectionWindow(imgPath, false)
 {
 }
 
+// 其实这个构造函数必是手动的时候调用
 ROISelectionWindow::ROISelectionWindow(const QString& imgPath, const QRectF& errRect,
                                        const bool& isManualFlag, QWidget* parent)
     : QDialog(parent), ui(new Ui::ROISelectionWindow)
@@ -98,7 +102,7 @@ ROISelectionWindow::ROISelectionWindow(const QString& imgPath, const QRectF& err
     isManual = isManualFlag;
     onLoadImage(imgPath);
     selectedROIRectIndex = -1;
-    isEditROIRect = true;
+    isEditROIRect = true; // 是否是要移动ROI的操作
 
     offsetW = -mImage.width() / 2.0;
     offsetH = -mImage.height() / 2.0;
@@ -132,14 +136,14 @@ void ROISelectionWindow::paintEvent(QPaintEvent* event)
     QRectF picRect(-width / 2.0, -height / 2.0, width, height);
     painter.drawImage(picRect, mImage);
 
-    painter.setPen(QPen(QColor(255, 255, 0), 1));
+    painter.setPen(QPen(QColor(255, 255, 0), 1)); // 正在编辑的ROI
     painter.drawRect(QRectF(StartPoint.x(), StartPoint.y(), EndPoint.x() - StartPoint.x(),
                             EndPoint.y() - StartPoint.y()));
 
     painter.setPen(QPen(QColor(184, 134, 11), 1));
-    painter.drawRects(trueROIRects);
+    painter.drawRects(trueROIRects);    // 编辑的、添加的ROI
     painter.setPen(QPen(QColor(255, 0, 0), 2));
-    painter.drawRects(errROIRects);
+    painter.drawRects(errROIRects);// 预定的的ROI视场
 }
 
 void ROISelectionWindow::wheelEvent(QWheelEvent* event)
@@ -158,9 +162,11 @@ void ROISelectionWindow::mousePressEvent(QMouseEvent* event)
     mPressed = true;
     selectedROIRectIndex = -1;
     if (!isManual) {
-        mOldPos = event->pos();
+        // 自动处理的情况下
+        mOldPos = event->pos(); // 鼠标点击的位置
         QPointF mouseRelativePos = ToRelativePos(event->pos());
         for (int i = 0; i < trueROIRects.length(); i++) {
+            // 判断一个点是不是在矩形内
             if (trueROIRects.at(i).contains(mouseRelativePos)) {
                 selectedROIRectIndex = i;
                 isEditROIRect = true;
@@ -191,6 +197,7 @@ void ROISelectionWindow::mouseMoveEvent(QMouseEvent* event)
     double yPtInterval = pos.y() - mOldPos.y();
     mOldPos = pos;
     if (!isEditROIRect) {
+        // 不是移动ROI操作，那就是移动画面的操作
         mXPtInterval += xPtInterval;
         mYPtInterval += yPtInterval;
         normalizeInterval(width(), height());
@@ -199,16 +206,12 @@ void ROISelectionWindow::mouseMoveEvent(QMouseEvent* event)
             auto len = trueROIRects.length();
             if (selectedROIRectIndex >= len) {
                 errROIRects[selectedROIRectIndex - len] =
-                    QRectF(errROIRects[selectedROIRectIndex - len].topLeft() +
-                               QPointF(xPtInterval, yPtInterval) / mZoomValue,
-                           errROIRects[selectedROIRectIndex - len].bottomRight() +
-                               QPointF(xPtInterval, yPtInterval) / mZoomValue);
+                    QRectF(errROIRects[selectedROIRectIndex - len].topLeft() + QPointF(xPtInterval, yPtInterval) / mZoomValue,
+                           errROIRects[selectedROIRectIndex - len].bottomRight() + QPointF(xPtInterval, yPtInterval) / mZoomValue);
             } else {
                 trueROIRects[selectedROIRectIndex] =
-                    QRectF(trueROIRects[selectedROIRectIndex].topLeft() +
-                               QPointF(xPtInterval, yPtInterval) / mZoomValue,
-                           trueROIRects[selectedROIRectIndex].bottomRight() +
-                               QPointF(xPtInterval, yPtInterval) / mZoomValue);
+                    QRectF(trueROIRects[selectedROIRectIndex].topLeft() + QPointF(xPtInterval, yPtInterval) / mZoomValue,
+                           trueROIRects[selectedROIRectIndex].bottomRight() + QPointF(xPtInterval, yPtInterval) / mZoomValue);
             }
         } else {
             EndPoint = ToRelativePos(event->pos());
@@ -233,6 +236,7 @@ void ROISelectionWindow::mouseReleaseEvent(QMouseEvent*)
     update();
 }
 
+// 加载图片，给mImage赋值
 void ROISelectionWindow::onLoadImage(const QString& image)
 {
     QFile file(image);
@@ -240,8 +244,6 @@ void ROISelectionWindow::onLoadImage(const QString& image)
         return;
 
     mImage.load(image);
-
-//    mImage.scaled(800,600,Qt::IgnoreAspectRatio,Qt::FastTransformation);
 }
 
 void ROISelectionWindow::onZoomInImage(void)
@@ -264,6 +266,8 @@ void ROISelectionWindow::onZoomOutImage(void)
     update();
 }
 
+// 从roiPos这个参数中得到所有选中的ROI，方向、矩形、包含像素、偏移
+// 这里的roiPos是4*9大小的，其中4表示四个象限，9表示9个视场
 QVector<roiRect> ROISelectionWindow::getRoIRects(const QImage& img,
                                                  const QVector<QVector<bool>>& roiPos,
                                                  const int& imgW, const int& imgH,
@@ -277,7 +281,9 @@ QVector<roiRect> ROISelectionWindow::getRoIRects(const QImage& img,
     QVector<QPointF> points = {ImgRect.topRight(), ImgRect.topLeft(), ImgRect.bottomLeft(),
                                ImgRect.bottomRight()};
     for (int row = 0; row < points.size(); row++) {
+        // 循环四个点
         for (int col = 0; col < roiPos[row].size(); col++) {
+//            循环所有的bool型的roiPos
             roiRect tmp;
             if (roiPos[row][col]) {
                 tmp.d = (direction)row;
@@ -305,6 +311,7 @@ void normalizeInterval(const double& width, const double& height)
 
 void ROISelectionWindow::on_switchPB_clicked()
 {
+    // 转变模式，拖动和选取ROI
     if (isManual) {
         StartPoint = QPointF(0, 0);
         EndPoint = QPointF(0, 0);
@@ -315,6 +322,7 @@ void ROISelectionWindow::on_switchPB_clicked()
 
 void ROISelectionWindow::on_clearAllPB_clicked()
 {
+    // 删除所有的ROI
     trueROIRects.clear();
     if (isManual) {
         StartPoint = QPointF(0, 0);
@@ -326,6 +334,7 @@ void ROISelectionWindow::on_clearAllPB_clicked()
 
 void ROISelectionWindow::on_UndoPB_clicked()
 {
+    // 删除最后一个元素
     if (isManual) {
         StartPoint = QPointF(0, 0);
         EndPoint = QPointF(0, 0);
@@ -338,6 +347,7 @@ void ROISelectionWindow::on_UndoPB_clicked()
 
 void ROISelectionWindow::on_ConfirmPB_clicked()
 {
+    // 主要是为了得到用户选中的roiRects，一个ROI是一个tmp，需要确定方向，偏移量，ROI对应区域（copy函数）
     QVector<roiRect> roiRects;
     errROIRects.append(trueROIRects);
     for (auto rectR : errROIRects) {
@@ -362,7 +372,7 @@ void ROISelectionWindow::on_ConfirmPB_clicked()
         tmp.offset = -1; // 表示是用户更正的
         tmp.rect = rectToAbsolutePos(fromCenterPoint(rectR.center(), ROIW, ROIH));
         tmp.img = mImage.copy(tmp.rect.toRect());
-        tmp.img.save("D:/projects/Vision_Tools_Set/MTFTool/pictures/1.PNG");
+        tmp.img.save("/Users/wanncye/Desktop/MTF/1.PNG");
         roiRects.append(tmp);
     }
 
