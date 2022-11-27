@@ -39,10 +39,7 @@ void LNXMTFPrototype::on_loadImg_clicked()
         QMessageBox::information(this,tr("提示框"),tr("打开图像失败!"));
         return;
     }
-    QMatrix matrix;
-    matrix.rotate(90.0);
-    img = img.transformed(matrix, Qt::FastTransformation);
-    ui->imgView->setPixmap(QPixmap::fromImage(img));
+    ui->imgView->setImg(img);
 
     // 要在图上画好13个ROI框
     ui->imgView->setRectProcessor(new myRectProcessor);
@@ -50,15 +47,17 @@ void LNXMTFPrototype::on_loadImg_clicked()
                                       {true, true, false, false, true, false, false, false, true},
                                       {true, true, false, false, true, false, false, false, true},
                                       {true, true, false, false, true, false, false, false, true}};
-    qDebug() << "img.width():" << img.width();
-    qDebug() << "img.height():" << img.height();
 
     QVector<roiRect> allROI = ui->imgView->getRectProcessor()->getRoIRects(img, roiBool, img.width(), img.height(), ui->roiWidth->value(), ui->roiHeight->value());
-    ui->imgView->addRectangle(allROI);
-    ui->imgView->update();
+    ui->imgView->addFieldRectangle(allROI);
 }
 
 void LNXMTFPrototype::on_calcMTF_clicked(){
-    ui->imgView->addRectangle(0, 0, 90, 90);
-    ui->imgView->update();
+}
+
+void LNXMTFPrototype::on_zoomIn_clicked(){
+    ui->imgView->onZoomInImage();
+}
+void LNXMTFPrototype::on_zoomOut_clicked(){
+    ui->imgView->onZoomOutImage();
 }

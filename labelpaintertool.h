@@ -32,27 +32,26 @@ class LabelPainterTool : public QLabel
     //Q_OBJECT
 public:
     explicit LabelPainterTool(QWidget *parent = nullptr);
-    ~LabelPainterTool();
+    ~LabelPainterTool() override;
 
     void paintEvent(QPaintEvent *event) override;    //绘制矩形
     void mousePressEvent(QMouseEvent *e) override;   //鼠标按下
     void mouseMoveEvent(QMouseEvent *e) override;    //鼠标移动
     void mouseReleaseEvent(QMouseEvent *e) override; //鼠标抬起
-    void wheelEvent(QWheelEvent* event) override;
 
     void onZoomInImage(void);
     void onZoomOutImage(void);
 
-    void addRectangle(QRectF rect);
-    void addRectangle(int x, int y, int h, int w);
-    void addRectangle(QVector<roiRect> roiRects);
+    void addFieldRectangle(QVector<roiRect> roiRects);
 
     void setRectProcessor(myRectProcessor* processor){rectProcessor = processor;}
+    void setImg(QImage& img){mImage = img;}
     myRectProcessor* getRectProcessor(){return rectProcessor;}
 
 private:
-    QVector<QRectF> mRects;
+    QVector<QRectF> mFieldRects; // 视场矩形
     myRectProcessor* rectProcessor;
+    QImage mImage;
 };
 
 class myRectProcessor{

@@ -18,6 +18,8 @@ public:
 public slots:
     void on_loadImg_clicked(); // 加载图片
     void on_calcMTF_clicked();
+    void on_zoomIn_clicked();
+    void on_zoomOut_clicked();
 
 private:
     Ui::LNXMTFPrototype *ui;
