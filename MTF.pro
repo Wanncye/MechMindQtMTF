@@ -50,13 +50,22 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 
+# MAC的环境
+#macx: LIBS += -L$$PWD/../../opt/anaconda3/envs/qt/lib/ -lpython3.7m
 
-macx: LIBS += -L$$PWD/../../opt/anaconda3/envs/qt/lib/ -lpython3.7m
+#INCLUDEPATH += $$PWD/../../opt/anaconda3/envs/qt/include/python3.7m
+#INCLUDEPATH += $$PWD/../../opt/anaconda3/envs/qt/lib/python3.7/site-packages/numpy/core/include
+#DEPENDPATH += $$PWD/../../opt/anaconda3/envs/qt/include
 
-INCLUDEPATH += $$PWD/../../opt/anaconda3/envs/qt/include/python3.7m
-INCLUDEPATH += $$PWD/../../opt/anaconda3/envs/qt/lib/python3.7/site-packages/numpy/core/include
+# windows下的环境
+win32:CONFIG(release, debug|release): LIBS += -LC:/Users/mech-mind/anaconda3/envs/qt/libs/ -lpython37
+else:win32:CONFIG(debug, debug|release): LIBS += -LC:/Users/mech-mind/anaconda3/envs/qt/libs/ -lpython37d
+else:unix: LIBS += -LC:/Users/mech-mind/anaconda3/envs/qt/libs/ -lpython37
 
-DEPENDPATH += $$PWD/../../opt/anaconda3/envs/qt/include
+INCLUDEPATH += C:/Users/mech-mind/anaconda3/envs/qt/include
+INCLUDEPATH += C:/Users/mech-mind/anaconda3/envs/qt/Lib/site-packages/numpy/core/include
+DEPENDPATH += C:/Users/mech-mind/anaconda3/envs/qt/libs
+
 
 DISTFILES += \
     mtfCaculation/example.py \

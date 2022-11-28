@@ -1,43 +1,57 @@
 #include "labelpaintertool.h"
 #include <QStyleOption>
-LabelPainterTool::LabelPainterTool(QWidget *parent) : QLabel(parent){}
-LabelPainterTool::~LabelPainterTool(){}
+#include <QScrollArea>
+LabelPainterTool::LabelPainterTool(QWidget* parent) : QLabel(parent) {}
+LabelPainterTool::~LabelPainterTool() {}
 
-void LabelPainterTool::paintEvent(QPaintEvent *event){
-    QStyleOption opt;
-    opt.init(this);
+void LabelPainterTool::paintEvent(QPaintEvent* event)
+{
     QPainter painter(this);
-    style()->drawPrimitive(QStyle::PE_Widget, &opt, &painter, this);
 
     if (mImage.isNull())
         return QWidget::paintEvent(event);
 
-    const int width = mImage.width();
-    const int height = mImage.height();
+    const int imgWidth = mImage.width();
+    const int imgHeight = mImage.height();
+    const int windowsWidth = this->width();
+    const int windowsHeight = this->height();
 
-    // 这一句相当于以左上角为原点，将坐标原点往右下角平移这么多像素
-    painter.translate(this->width() / 2.0 + rectProcessor->mXPtInterval,
-                      this->height() / 2.0 + rectProcessor->mYPtInterval);
+    // 以左上角为原点，将坐标原点往右下角平移这么多像素
+    painter.translate(windowsWidth / 2.0 + rectProcessor->mXPtInterval,
+                      windowsHeight / 2.0 + rectProcessor->mYPtInterval);
 
     painter.scale(rectProcessor->mZoomValue, rectProcessor->mZoomValue);
 
-    QRectF picRect(-width / 2.0, -height / 2.0, width, height);
-    painter.drawImage(picRect, mImage);
+    // windowRect要按当前的坐标系来计算，imgRect要按图片的坐标系计算
+    // 且这里不能使用QLabel的setPixmap
+    QRectF windowRect(-windowsWidth / 2.0, -windowsHeight / 2.0, windowsWidth, windowsHeight);
+    QRectF imgRect(0, 0, imgWidth, imgHeight);
+    painter.drawPixmap(windowRect, QPixmap::fromImage(mImage), imgRect);
+    setPixmap(QPixmap::fromImage(mImage));
 
+    // 十三个视场绘制
     painter.setPen(QPen(Qt::red, 4));
-    for(const auto& rect : mFieldRects)
-        painter.drawRect(rect);
-}
-//鼠标按下
-void LabelPainterTool::mousePressEvent(QMouseEvent *e){
-//    auto mOldPos = e->pos();
-//    addRangle(mOldPos.x(), mOldPos.y(), 90, 90);
-//    update();
-}
-void LabelPainterTool::mouseMoveEvent(QMouseEvent *e){}    //鼠标移动
-void LabelPainterTool::mouseReleaseEvent(QMouseEvent *e){} //鼠标抬起
+    for (const auto& rect : mFieldRects)
+        painter.drawRect(rect.rect);
+    painter.drawRect(QRectF(-1, -1, 2, 2));
 
-void LabelPainterTool::onZoomInImage(void){
+    // 手动选择的视场绘制
+    for (const auto& rect : mManualRects)
+        painter.drawRect(rect.rect);
+}
+
+//鼠标按下
+void LabelPainterTool::mousePressEvent(QMouseEvent* e)
+{
+    //    auto mOldPos = e->pos();
+    //    addRangle(mOldPos.x(), mOldPos.y(), 90, 90);
+    //    update();
+}
+void LabelPainterTool::mouseMoveEvent(QMouseEvent* e) {}    //鼠标移动
+void LabelPainterTool::mouseReleaseEvent(QMouseEvent* e) {} //鼠标抬起
+
+void LabelPainterTool::onZoomInImage(void)
+{
     rectProcessor->mZoomValue += 0.2;
     if (rectProcessor->mZoomValue >= 2) {
         rectProcessor->mZoomValue = 2;
@@ -45,7 +59,8 @@ void LabelPainterTool::onZoomInImage(void){
     update();
 }
 
-void LabelPainterTool::onZoomOutImage(void){
+void LabelPainterTool::onZoomOutImage(void)
+{
     rectProcessor->mZoomValue -= 0.2;
     if (rectProcessor->mZoomValue <= 0.2) {
         rectProcessor->mZoomValue = 0.2;
@@ -53,16 +68,17 @@ void LabelPainterTool::onZoomOutImage(void){
     update();
 }
 
-void LabelPainterTool::addFieldRectangle(QVector<roiRect> roiRects){
-    for(auto& roi : roiRects)
-        mFieldRects.push_back(roi.rect);
+void LabelPainterTool::addFieldRectangle(QVector<roiRect>& roiRects)
+{
+    for (auto& roi : roiRects)
+        mFieldRects.push_back(roi);
     update();
 }
 
 QVector<roiRect> myRectProcessor::getRoIRects(const QImage& img,
-                                                 const QVector<QVector<bool>>& roiPos,
-                                                 const int& imgW, const int& imgH,
-                                                 const double& roiW, const double& roiH)
+                                              const QVector<QVector<bool>>& roiPos, const int& imgW,
+                                              const int& imgH, const double& roiW,
+                                              const double& roiH)
 {
     QVector<roiRect> roiRects;
     mOffsetH = -imgH / 2.0;
@@ -70,19 +86,16 @@ QVector<roiRect> myRectProcessor::getRoIRects(const QImage& img,
     QRectF ImgRect = QRectF(-imgW / 2.0, -imgH / 2.0, imgW, imgH);
 
     // 得到图像的四个角的坐标，用于计算ROI的offset
-    QVector<QPointF> points = {ImgRect.topRight(), ImgRect.topLeft(), ImgRect.bottomLeft(), ImgRect.bottomRight()};
-    qDebug() << "ImgRect.topRight(): " << ImgRect.topRight().x() << ImgRect.topRight().y();
-    qDebug() << "ImgRect.topLeft(): " << ImgRect.topLeft().x() << ImgRect.topLeft().y();
-    qDebug() << "ImgRect.bottomLeft(): " << ImgRect.bottomLeft().x() << ImgRect.bottomLeft().y();
-    qDebug() << "ImgRect.bottomRight(): " << ImgRect.bottomRight().x() << ImgRect.bottomRight().y();
+    QVector<QPointF> points = {ImgRect.topRight(), ImgRect.topLeft(), ImgRect.bottomLeft(),
+                               ImgRect.bottomRight()};
     for (int row = 0; row < points.size(); row++) {
         for (int col = 0; col < roiPos[row].size(); col++) {
-            if(!roiPos[row][col])
+            if (!roiPos[row][col])
                 continue;
             roiRect newRect;
             newRect.d = static_cast<direction>(row);
             newRect.offset = (col + 1) * 0.1;
-            newRect.rect = rectToAbsolutePos(fromCenterPoint(points[row] * newRect.offset * mZoomValue, roiW, roiH));
+            newRect.rect = fromCenterPoint(points[row] * newRect.offset * mZoomValue, roiW, roiH);
             newRect.img = img.copy(newRect.rect.toRect());
             roiRects.append(newRect);
         }

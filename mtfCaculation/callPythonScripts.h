@@ -20,8 +20,7 @@ void PythonInit()
             PyEval_InitThreads();
 
             PyRun_SimpleString("import sys");
-            PyRun_SimpleString(
-                "sys.path.append('D:/projects/Vision_Tools_Set/MTFTool/mtfCaculation')");
+            PyRun_SimpleString("sys.path.append('D:/MechMindQtMTF/mtfCaculation')");
             PyEval_ReleaseThread(PyThreadState_Get());
         }
     }
@@ -33,12 +32,13 @@ QVector<int> callPython(const std::vector<std::vector<std::vector<double>>>& img
                         const double& pixelSize)
 {
     class PyThreadStateLock PyThreadLock;
-    Py_SetPythonHome(L"/Users/wanncye/opt/anaconda3/envs/qt/bin");
+    //    Py_SetPythonHome(L"/Users/wanncye/opt/anaconda3/envs/qt/bin"); // MAC
+    Py_SetPythonHome(L"C:/Users/mech-mind/anaconda3/envs/qt"); // Windows
     Py_Initialize();
 
     PyRun_SimpleString("import sys");
-    PyRun_SimpleString("sys.path.append('/Users/wanncye/Desktop/MTF/mtfCaculation')");
-
+    //    PyRun_SimpleString("sys.path.append('/Users/wanncye/Desktop/MTF/mtfCaculation')"); // MAC
+    PyRun_SimpleString("sys.path.append('D:/MechMindQtMTF/mtfCaculation')"); // Windows
 
     PyObject* pModule = PyImport_ImportModule("example");
     if (pModule == nullptr) {
