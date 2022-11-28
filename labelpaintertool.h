@@ -20,9 +20,9 @@ enum operateMode { choose = 0, edit = 1 };
 
 struct roiRect
 {
-    double offset = 0;
-    bool checked = false; // 这里内存对齐是什么情况啊？
-    direction d = (direction)0;
+    double offset = 0;                       // 8
+    bool checked = 0;                        // 4
+    direction d = static_cast<direction>(0); // 4
     QImage img;
     QRectF rect;
 };

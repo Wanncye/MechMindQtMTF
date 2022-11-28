@@ -52,12 +52,14 @@ void LNXMTFPrototype::on_loadImg_clicked()
                                       {true, true, false, false, true, false, false, false, true}};
     QVector<roiRect> allROI = ui->imgView->getRectProcessor()->getRoIRects(
         img, roiBool, img.width(), img.height(), ui->roiWidth->value(), ui->roiHeight->value());
+
     ui->imgView->addFieldRectangle(allROI);
 
     // 使能编辑图片相关按钮
     ui->zoomIn->setEnabled(true);
     ui->zoomOut->setEnabled(true);
     ui->chooseRoi->setEnabled(true);
+    ui->chooseRoi->setChecked(true);
     ui->editRoi->setEnabled(true);
 }
 

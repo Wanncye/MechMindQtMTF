@@ -202,6 +202,7 @@ void ROISelectionWindow::mouseMoveEvent(QMouseEvent* event)
         mYPtInterval += yPtInterval;
         normalizeInterval(width(), height());
     } else {
+        qDebug() << "isEditROIRect";
         if (!isManual) {
             qDebug() << "!isManual";
             auto len = trueROIRects.length();

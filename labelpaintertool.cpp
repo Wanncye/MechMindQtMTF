@@ -29,8 +29,14 @@ void LabelPainterTool::paintEvent(QPaintEvent* event)
     painter.drawPixmap(windowRect, QPixmap::fromImage(mImage), imgRect);
     setPixmap(QPixmap::fromImage(mImage));
 
+    // 正在编辑的ROI
+    painter.setPen(QPen(QColor(255, 255, 0), 1));
+    painter.drawRect(QRectF(mMouseStartPoint.x(), mMouseStartPoint.y(),
+                            mMouseEndPoint.x() - mMouseStartPoint.x(),
+                            mMouseEndPoint.y() - mMouseStartPoint.y()));
+
     // 十三个视场绘制
-    painter.setPen(QPen(Qt::red, 4));
+    painter.setPen(QPen(Qt::red, 2));
     for (const auto& roi : mFieldRects) {
         painter.drawRect(roi.rect);
         if (roi.checked)
@@ -41,6 +47,7 @@ void LabelPainterTool::paintEvent(QPaintEvent* event)
     painter.drawRect(QRectF(-1, -1, 2, 2));
 
     // 手动选择的视场绘制
+    painter.setPen(QPen(Qt::green, 2));
     for (const auto& rect : mManualRects)
         painter.drawRect(rect);
 }
@@ -49,10 +56,10 @@ void LabelPainterTool::paintEvent(QPaintEvent* event)
 void LabelPainterTool::mousePressEvent(QMouseEvent* event)
 {
     mPressed = true;
+    QPointF mouseRelativePos = mRectProcessor->ToRelativePos(event->pos());
     switch (mOpMode) {
     case choose:
     {
-        QPointF mouseRelativePos = mRectProcessor->ToRelativePos(event->pos());
         for (auto& roi : mFieldRects) {
             if (roi.rect.contains(mouseRelativePos)) {
                 roi.checked = !roi.checked;
@@ -63,8 +70,14 @@ void LabelPainterTool::mousePressEvent(QMouseEvent* event)
     }
     case edit:
     {
-        mMouseStartPoint = mRectProcessor->ToRelativePos(event->pos());
-        mMouseEndPoint = mRectProcessor->ToRelativePos(event->pos());
+        for (auto& roi : mFieldRects) {
+            if (roi.rect.contains(mouseRelativePos)) {
+                mMouseStartPoint = mouseRelativePos;
+                mMouseEndPoint = mouseRelativePos;
+                break;
+            }
+        }
+
         break;
     }
     default:
@@ -79,12 +92,18 @@ void LabelPainterTool::mouseMoveEvent(QMouseEvent* event)
         return QWidget::mouseMoveEvent(event);
     setCursor(Qt::CrossCursor);
 
+    QPointF mouseRelativePos = mRectProcessor->ToRelativePos(event->pos());
     switch (mOpMode) {
     case choose:
         break;
     case edit:
     {
-        mMouseEndPoint = mRectProcessor->ToRelativePos(event->pos());
+        for (auto& roi : mFieldRects) {
+            if (roi.rect.contains(mouseRelativePos)) {
+                mMouseEndPoint = mouseRelativePos;
+                break;
+            }
+        }
         break;
     }
     default:
@@ -167,6 +186,7 @@ void LabelPainterTool::addFieldRectangle(QVector<roiRect>& roiRects)
 {
     for (auto& roi : roiRects)
         mFieldRects.push_back(roi);
+
     update();
 }
 
@@ -176,6 +196,7 @@ QVector<roiRect> myRectProcessor::getRoIRects(const QImage& img,
                                               const double& roiH)
 {
     QVector<roiRect> roiRects;
+    roiRects.reserve(roiPos.size() * roiPos.front().size());
     mOffsetH = -imgH / 2.0;
     mOffsetW = -imgW / 2.0;
     QRectF ImgRect = QRectF(-imgW / 2.0, -imgH / 2.0, imgW, imgH);
