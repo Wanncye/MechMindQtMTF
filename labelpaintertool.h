@@ -16,10 +16,12 @@
 #include <QPixmap>
 
 enum direction { ne = 0, nw = 1, sw, se };
+enum operateMode { choose = 0, edit = 1 };
 
 struct roiRect
 {
     double offset = 0;
+    bool checked = false; // 这里内存对齐是什么情况啊？
     direction d = (direction)0;
     QImage img;
     QRectF rect;
@@ -34,25 +36,37 @@ public:
     explicit LabelPainterTool(QWidget* parent = nullptr);
     ~LabelPainterTool() override;
 
-    void paintEvent(QPaintEvent* event) override;    //绘制矩形
-    void mousePressEvent(QMouseEvent* e) override;   //鼠标按下
-    void mouseMoveEvent(QMouseEvent* e) override;    //鼠标移动
-    void mouseReleaseEvent(QMouseEvent* e) override; //鼠标抬起
+    void paintEvent(QPaintEvent* event) override;        //绘制矩形
+    void mousePressEvent(QMouseEvent* event) override;   //鼠标按下
+    void mouseMoveEvent(QMouseEvent* event) override;    //鼠标移动
+    void mouseReleaseEvent(QMouseEvent* event) override; //鼠标抬起
 
     void onZoomInImage(void);
     void onZoomOutImage(void);
 
     void addFieldRectangle(QVector<roiRect>& roiRects);
 
-    void setRectProcessor(myRectProcessor* processor) { rectProcessor = processor; }
+    void setRectProcessor(myRectProcessor* processor) { mRectProcessor = processor; }
     void setImg(QImage& img) { mImage = img; }
-    myRectProcessor* getRectProcessor() { return rectProcessor; }
+    void setOperateMode(const operateMode& op) { mOpMode = op; };
+    myRectProcessor* getRectProcessor() { return mRectProcessor; }
+    void clearFieldRect() { mFieldRects.clear(); }
+
+signals:
+    void StartPointSignal(QPointF p);
+    void StopPointSignal(QPointF p);
 
 private:
-    QVector<roiRect> mFieldRects;  // 十三个视场矩形
-    QVector<roiRect> mManualRects; // 手动选择的视场
-    myRectProcessor* rectProcessor;
+    QVector<roiRect> mFieldRects; // 十三个视场矩形
+    QVector<QRectF> mManualRects; // 手动选择的视场
+    myRectProcessor* mRectProcessor;
     QImage mImage;
+
+    // 状态相关
+    bool mPressed = false;
+    operateMode mOpMode = choose;
+    QPointF mMouseStartPoint;
+    QPointF mMouseEndPoint;
 };
 
 class myRectProcessor

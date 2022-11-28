@@ -12,7 +12,7 @@ class LNXMTFPrototype : public QWidget
     Q_OBJECT
 
 public:
-    explicit LNXMTFPrototype(QWidget *parent = nullptr);
+    explicit LNXMTFPrototype(QWidget* parent = nullptr);
     ~LNXMTFPrototype();
 
 public slots:
@@ -20,9 +20,12 @@ public slots:
     void on_calcMTF_clicked();
     void on_zoomIn_clicked();
     void on_zoomOut_clicked();
+    void on_chooseRoi_clicked(bool checked);
+    void on_editRoi_clicked(bool checked);
 
 private:
-    Ui::LNXMTFPrototype *ui;
+    void clear();
+    Ui::LNXMTFPrototype* ui;
 };
 
 #endif // LNXMTFPROTOTYPE_H

@@ -7,13 +7,13 @@
 #include "ui_ROISelectionWindow.h"
 
 int selectedROIRectIndex = -1; // 鼠标点击时、选择ROI的下标索引
-double offsetW = 0; // 以中心点为坐标轴时坐标转化参数
-double offsetH = 0; // 以中心点为坐标轴时坐标转化参数
-double mXPtInterval = 0;    // 移动画面的X偏移
-double mYPtInterval = 0;    // 移动画面的y偏移
-qreal mZoomValue = 1.0; // 放大缩小系数
+double offsetW = 0;            // 以中心点为坐标轴时坐标转化参数
+double offsetH = 0;            // 以中心点为坐标轴时坐标转化参数
+double mXPtInterval = 0;       // 移动画面的X偏移
+double mYPtInterval = 0;       // 移动画面的y偏移
+qreal mZoomValue = 1.0;        // 放大缩小系数
 
-QPointF mOldPos;    // 鼠标点击的时候的坐标
+QPointF mOldPos; // 鼠标点击的时候的坐标
 QRectF imageRect;
 
 static QVector<QRectF> errROIRects;
@@ -141,9 +141,9 @@ void ROISelectionWindow::paintEvent(QPaintEvent* event)
                             EndPoint.y() - StartPoint.y()));
 
     painter.setPen(QPen(QColor(184, 134, 11), 1));
-    painter.drawRects(trueROIRects);    // 编辑的、添加的ROI
+    painter.drawRects(trueROIRects); // 编辑的、添加的ROI
     painter.setPen(QPen(QColor(255, 0, 0), 2));
-    painter.drawRects(errROIRects);// 预定的的ROI视场
+    painter.drawRects(errROIRects); // 预定的的ROI视场
 }
 
 void ROISelectionWindow::wheelEvent(QWheelEvent* event)
@@ -183,7 +183,7 @@ void ROISelectionWindow::mousePressEvent(QMouseEvent* event)
     } else {
         StartPoint = ToRelativePos(event->pos());
         EndPoint = ToRelativePos(event->pos());
-        emit StartPointSignal(StartPoint);
+        //        emit StartPointSignal(StartPoint);
     }
 }
 
@@ -203,19 +203,25 @@ void ROISelectionWindow::mouseMoveEvent(QMouseEvent* event)
         normalizeInterval(width(), height());
     } else {
         if (!isManual) {
+            qDebug() << "!isManual";
             auto len = trueROIRects.length();
             if (selectedROIRectIndex >= len) {
                 errROIRects[selectedROIRectIndex - len] =
-                    QRectF(errROIRects[selectedROIRectIndex - len].topLeft() + QPointF(xPtInterval, yPtInterval) / mZoomValue,
-                           errROIRects[selectedROIRectIndex - len].bottomRight() + QPointF(xPtInterval, yPtInterval) / mZoomValue);
+                    QRectF(errROIRects[selectedROIRectIndex - len].topLeft() +
+                               QPointF(xPtInterval, yPtInterval) / mZoomValue,
+                           errROIRects[selectedROIRectIndex - len].bottomRight() +
+                               QPointF(xPtInterval, yPtInterval) / mZoomValue);
             } else {
                 trueROIRects[selectedROIRectIndex] =
-                    QRectF(trueROIRects[selectedROIRectIndex].topLeft() + QPointF(xPtInterval, yPtInterval) / mZoomValue,
-                           trueROIRects[selectedROIRectIndex].bottomRight() + QPointF(xPtInterval, yPtInterval) / mZoomValue);
+                    QRectF(trueROIRects[selectedROIRectIndex].topLeft() +
+                               QPointF(xPtInterval, yPtInterval) / mZoomValue,
+                           trueROIRects[selectedROIRectIndex].bottomRight() +
+                               QPointF(xPtInterval, yPtInterval) / mZoomValue);
             }
         } else {
+            qDebug() << "isManual";
             EndPoint = ToRelativePos(event->pos());
-            emit StopPointSignal(EndPoint);
+            //            emit StopPointSignal(EndPoint);
         }
     }
 
@@ -283,7 +289,7 @@ QVector<roiRect> ROISelectionWindow::getRoIRects(const QImage& img,
     for (int row = 0; row < points.size(); row++) {
         // 循环四个点
         for (int col = 0; col < roiPos[row].size(); col++) {
-//            循环所有的bool型的roiPos
+            //            循环所有的bool型的roiPos
             roiRect tmp;
             if (roiPos[row][col]) {
                 tmp.d = (direction)row;

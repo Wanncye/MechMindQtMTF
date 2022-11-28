@@ -17,10 +17,10 @@ void LabelPainterTool::paintEvent(QPaintEvent* event)
     const int windowsHeight = this->height();
 
     // 以左上角为原点，将坐标原点往右下角平移这么多像素
-    painter.translate(windowsWidth / 2.0 + rectProcessor->mXPtInterval,
-                      windowsHeight / 2.0 + rectProcessor->mYPtInterval);
+    painter.translate(windowsWidth / 2.0 + mRectProcessor->mXPtInterval,
+                      windowsHeight / 2.0 + mRectProcessor->mYPtInterval);
 
-    painter.scale(rectProcessor->mZoomValue, rectProcessor->mZoomValue);
+    painter.scale(mRectProcessor->mZoomValue, mRectProcessor->mZoomValue);
 
     // windowRect要按当前的坐标系来计算，imgRect要按图片的坐标系计算
     // 且这里不能使用QLabel的setPixmap
@@ -31,39 +31,134 @@ void LabelPainterTool::paintEvent(QPaintEvent* event)
 
     // 十三个视场绘制
     painter.setPen(QPen(Qt::red, 4));
-    for (const auto& rect : mFieldRects)
-        painter.drawRect(rect.rect);
+    for (const auto& roi : mFieldRects) {
+        painter.drawRect(roi.rect);
+        if (roi.checked)
+            painter.fillRect(roi.rect, Qt::red);
+    }
+
+    // 中心点
     painter.drawRect(QRectF(-1, -1, 2, 2));
 
     // 手动选择的视场绘制
     for (const auto& rect : mManualRects)
-        painter.drawRect(rect.rect);
+        painter.drawRect(rect);
 }
 
 //鼠标按下
-void LabelPainterTool::mousePressEvent(QMouseEvent* e)
+void LabelPainterTool::mousePressEvent(QMouseEvent* event)
 {
-    //    auto mOldPos = e->pos();
-    //    addRangle(mOldPos.x(), mOldPos.y(), 90, 90);
-    //    update();
+    mPressed = true;
+    switch (mOpMode) {
+    case choose:
+    {
+        QPointF mouseRelativePos = mRectProcessor->ToRelativePos(event->pos());
+        for (auto& roi : mFieldRects) {
+            if (roi.rect.contains(mouseRelativePos)) {
+                roi.checked = !roi.checked;
+                break;
+            }
+        }
+        break;
+    }
+    case edit:
+    {
+        mMouseStartPoint = mRectProcessor->ToRelativePos(event->pos());
+        mMouseEndPoint = mRectProcessor->ToRelativePos(event->pos());
+        break;
+    }
+    default:
+        break;
+    }
 }
-void LabelPainterTool::mouseMoveEvent(QMouseEvent* e) {}    //鼠标移动
-void LabelPainterTool::mouseReleaseEvent(QMouseEvent* e) {} //鼠标抬起
+
+//鼠标移动
+void LabelPainterTool::mouseMoveEvent(QMouseEvent* event)
+{
+    if (!mPressed)
+        return QWidget::mouseMoveEvent(event);
+    setCursor(Qt::CrossCursor);
+
+    switch (mOpMode) {
+    case choose:
+        break;
+    case edit:
+    {
+        mMouseEndPoint = mRectProcessor->ToRelativePos(event->pos());
+        break;
+    }
+    default:
+        break;
+    }
+    //    QPointF pos = event->pos();
+    //    double xPtInterval = pos.x() - mMouseStartPoint.x();
+    //    double yPtInterval = pos.y() - mMouseStartPoint.y();
+    //    mOldPos = pos;
+    //    if (!isEditROIRect) {
+    //        // 不是移动ROI操作，那就是移动画面的操作
+    //        mXPtInterval += xPtInterval;
+    //        mYPtInterval += yPtInterval;
+    //        normalizeInterval(width(), height());
+    //    } else {
+    //        if (!isManual) {
+    //            auto len = trueROIRects.length();
+    //            if (selectedROIRectIndex >= len) {
+    //                errROIRects[selectedROIRectIndex - len] =
+    //                    QRectF(errROIRects[selectedROIRectIndex - len].topLeft() +
+    //                               QPointF(xPtInterval, yPtInterval) / mZoomValue,
+    //                           errROIRects[selectedROIRectIndex - len].bottomRight() +
+    //                               QPointF(xPtInterval, yPtInterval) / mZoomValue);
+    //            } else {
+    //                trueROIRects[selectedROIRectIndex] =
+    //                    QRectF(trueROIRects[selectedROIRectIndex].topLeft() +
+    //                               QPointF(xPtInterval, yPtInterval) / mZoomValue,
+    //                           trueROIRects[selectedROIRectIndex].bottomRight() +
+    //                               QPointF(xPtInterval, yPtInterval) / mZoomValue);
+    //            }
+    //        } else {
+    //            EndPoint = ToRelativePos(event->pos());
+    //            emit StopPointSignal(EndPoint);
+    //        }
+    //    }
+
+    update();
+}
+
+//鼠标抬起
+void LabelPainterTool::mouseReleaseEvent(QMouseEvent* event)
+{
+    mPressed = false;
+    setCursor(Qt::ArrowCursor);
+
+    switch (mOpMode) {
+    case choose:
+        break;
+    case edit:
+    {
+        mManualRects.append(QRectF(mMouseStartPoint, mMouseEndPoint));
+        break;
+    }
+    default:
+        break;
+    }
+
+    update();
+}
 
 void LabelPainterTool::onZoomInImage(void)
 {
-    rectProcessor->mZoomValue += 0.2;
-    if (rectProcessor->mZoomValue >= 2) {
-        rectProcessor->mZoomValue = 2;
+    mRectProcessor->mZoomValue += 0.2;
+    if (mRectProcessor->mZoomValue >= 2) {
+        mRectProcessor->mZoomValue = 2;
     }
     update();
 }
 
 void LabelPainterTool::onZoomOutImage(void)
 {
-    rectProcessor->mZoomValue -= 0.2;
-    if (rectProcessor->mZoomValue <= 0.2) {
-        rectProcessor->mZoomValue = 0.2;
+    mRectProcessor->mZoomValue -= 0.2;
+    if (mRectProcessor->mZoomValue <= 0.2) {
+        mRectProcessor->mZoomValue = 0.2;
     }
     update();
 }
@@ -97,7 +192,8 @@ QVector<roiRect> myRectProcessor::getRoIRects(const QImage& img,
             newRect.offset = (col + 1) * 0.1;
             newRect.rect = fromCenterPoint(points[row] * newRect.offset * mZoomValue, roiW, roiH);
             newRect.img = img.copy(newRect.rect.toRect());
-            roiRects.append(newRect);
+            newRect.checked = false;
+            roiRects.push_back(newRect);
         }
     }
     return roiRects;

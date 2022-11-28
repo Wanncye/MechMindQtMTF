@@ -13,6 +13,7 @@ void PythonInit()
 {
     if (!Py_IsInitialized()) {
         // 1.初始化Python解释器，这是调用操作的第一步
+        Py_SetPythonHome(L"C:/Users/mech-mind/anaconda3/envs/qt");
         Py_Initialize();
         if (!Py_IsInitialized()) {
             qDebug("Initial Python failed!");
