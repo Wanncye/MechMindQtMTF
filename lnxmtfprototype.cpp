@@ -16,6 +16,7 @@ LNXMTFPrototype::LNXMTFPrototype(QWidget* parent) : QWidget(parent), ui(new Ui::
     ui->zoomOut->setEnabled(false);
     ui->chooseRoi->setEnabled(false);
     ui->editRoi->setEnabled(false);
+    ui->viewersTabs->setCurrentWidget(ui->imgTab);
 }
 
 LNXMTFPrototype::~LNXMTFPrototype() { delete ui; }
@@ -41,6 +42,7 @@ void LNXMTFPrototype::on_loadImg_clicked()
         QMessageBox::information(this, tr("Open Failed"), tr("Open image Failed!"));
         return;
     }
+    ui->imgView->setParentScrollArea(ui->scrollArea);
     ui->imgView->setImg(img);
     //    ui->imgView->setPixmap(QPixmap::fromImage(img));
 
@@ -63,7 +65,13 @@ void LNXMTFPrototype::on_loadImg_clicked()
     ui->editRoi->setEnabled(true);
 }
 
-void LNXMTFPrototype::on_calcMTF_clicked() {}
+void LNXMTFPrototype::on_calcMTF_clicked()
+{
+    //    ui->lineChart->resetChartSeries(genSeriesNames(3));
+    //    ui->viewersTabs->setCornerWidget(ui->mtfCurveTab);
+    //    ui->lineChart->resetChartSeries({"123", "456"});
+    //    ui->lineChart->setAxisTitle("x", "y");
+}
 
 void LNXMTFPrototype::on_zoomIn_clicked() { ui->imgView->onZoomInImage(); }
 void LNXMTFPrototype::on_zoomOut_clicked() { ui->imgView->onZoomOutImage(); }

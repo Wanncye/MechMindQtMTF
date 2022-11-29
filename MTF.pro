@@ -1,6 +1,8 @@
 QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT += charts
+QT += core
 
 CONFIG += c++11, sdk_no_version_check
 QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.15
@@ -17,6 +19,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    ProfilerChartView.cpp \
     danleimtfcalc.cpp \
     labelpaintertool.cpp \
     lnxmtfprototype.cpp \
@@ -26,6 +29,7 @@ SOURCES += \
     ROISelectionWindow.cpp
 
 HEADERS += \
+    ProfilerChartView.h \
     danleimtfcalc.h \
     danleimtfcalc.h \
     labelpaintertool.h \

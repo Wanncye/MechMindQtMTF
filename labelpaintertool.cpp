@@ -4,6 +4,8 @@
 LabelPainterTool::LabelPainterTool(QWidget* parent) : QLabel(parent) {}
 LabelPainterTool::~LabelPainterTool() {}
 
+#define print(val) qDebug() << #val << val
+
 void LabelPainterTool::paintEvent(QPaintEvent* event)
 {
     QPainter painter(this);
@@ -36,7 +38,7 @@ void LabelPainterTool::paintEvent(QPaintEvent* event)
                             mMouseEndPoint.y() - mMouseStartPoint.y()));
 
     // 十三个视场绘制
-    painter.setPen(QPen(Qt::red, 2));
+    painter.setPen(QPen(Qt::red, 4));
     for (const auto& roi : mFieldRects) {
         painter.drawRect(roi.rect);
         if (roi.checked)
@@ -188,6 +190,12 @@ void LabelPainterTool::addFieldRectangle(QVector<roiRect>& roiRects)
         mFieldRects.push_back(roi);
 
     update();
+}
+
+void LabelPainterTool::clearFieldRect()
+{
+    mFieldRects.clear();
+    mManualRects.clear();
 }
 
 QVector<roiRect> myRectProcessor::getRoIRects(const QImage& img,

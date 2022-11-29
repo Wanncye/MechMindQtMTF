@@ -9,6 +9,7 @@
 #include <QPen>
 #include <QPainter>
 #include <QWidget>
+#include <QScrollArea>
 
 #include <QDebug>
 #include <QMouseEvent>
@@ -48,9 +49,10 @@ public:
 
     void setRectProcessor(myRectProcessor* processor) { mRectProcessor = processor; }
     void setImg(QImage& img) { mImage = img; }
-    void setOperateMode(const operateMode& op) { mOpMode = op; };
+    void setOperateMode(const operateMode& op) { mOpMode = op; }
+    void setParentScrollArea(QScrollArea* scrollArea) { mScrollArea = scrollArea; }
     myRectProcessor* getRectProcessor() { return mRectProcessor; }
-    void clearFieldRect() { mFieldRects.clear(); }
+    void clearFieldRect();
 
 signals:
     void StartPointSignal(QPointF p);
@@ -67,6 +69,9 @@ private:
     operateMode mOpMode = choose;
     QPointF mMouseStartPoint;
     QPointF mMouseEndPoint;
+
+    // scrollArea改变大小用
+    QScrollArea* mScrollArea;
 };
 
 class myRectProcessor

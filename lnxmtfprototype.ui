@@ -91,32 +91,59 @@
          </layout>
         </item>
         <item>
-         <widget class="QScrollArea" name="scrollArea">
-          <property name="widgetResizable">
-           <bool>true</bool>
+         <widget class="QTabWidget" name="viewersTabs">
+          <property name="currentIndex">
+           <number>1</number>
           </property>
-          <widget class="QWidget" name="scrollAreaWidgetContents">
-           <property name="geometry">
-            <rect>
-             <x>0</x>
-             <y>0</y>
-             <width>370</width>
-             <height>377</height>
-            </rect>
-           </property>
-           <property name="layoutDirection">
-            <enum>Qt::LeftToRight</enum>
-           </property>
-           <layout class="QGridLayout" name="gridLayout">
-            <item row="0" column="0">
-             <widget class="LabelPainterTool" name="imgView">
-              <property name="text">
-               <string>Please Choose Image</string>
+          <widget class="QWidget" name="imgTab">
+           <attribute name="title">
+            <string>ROI Editor</string>
+           </attribute>
+           <layout class="QHBoxLayout" name="horizontalLayout_6">
+            <item>
+             <widget class="QScrollArea" name="scrollArea">
+              <property name="sizeAdjustPolicy">
+               <enum>QAbstractScrollArea::AdjustToContents</enum>
               </property>
-              <property name="alignment">
-               <set>Qt::AlignCenter</set>
+              <property name="widgetResizable">
+               <bool>true</bool>
               </property>
+              <widget class="QWidget" name="scrollAreaWidgetContents">
+               <property name="geometry">
+                <rect>
+                 <x>0</x>
+                 <y>0</y>
+                 <width>340</width>
+                 <height>348</height>
+                </rect>
+               </property>
+               <property name="layoutDirection">
+                <enum>Qt::LeftToRight</enum>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout">
+                <item>
+                 <widget class="LabelPainterTool" name="imgView">
+                  <property name="text">
+                   <string>Please Choose Image</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
              </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="mtfCurveTab">
+           <attribute name="title">
+            <string>MTF Curve</string>
+           </attribute>
+           <layout class="QHBoxLayout" name="horizontalLayout_9">
+            <item>
+             <widget class="MTFProfilerLineChart" name="lineChart"/>
             </item>
            </layout>
           </widget>
@@ -345,7 +372,12 @@
   <customwidget>
    <class>LabelPainterTool</class>
    <extends>QLabel</extends>
-   <header location="global">labelpaintertool.h</header>
+   <header>labelpaintertool.h</header>
+  </customwidget>
+  <customwidget>
+   <class>MTFProfilerLineChart</class>
+   <extends>QGraphicsView</extends>
+   <header>ProfilerChartView.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
