@@ -4,11 +4,18 @@ import mtf as mtf
 import pandas as pd
 import os
 
-
+def readExcelFile(fileName: str, imgName):
+    df = pd.read_excel(fileName, sheet_name=imgName)
+    print(df.head(5))
+    print(df.iloc[0][0])
+    print(df.iloc[0][1])
+    print(df.iloc[0][2])
+    return
 
 def writeToExcelFile(fileName: str, data: tuple, imgName: str='') -> bool:
     # pandas的版本得是1.2.5
-    absPath = "/Users/wanncye/Desktop/MTF"
+#    absPath = "/Users/wanncye/Desktop/MTF"
+    absPath = "D://projects_build/MTF_build"
     fileName = os.path.join(absPath, fileName)
     if len(data) == 0:
         return False
@@ -33,7 +40,7 @@ def writeToExcelFile(fileName: str, data: tuple, imgName: str='') -> bool:
             if imgName in wb:
                 print("remove sheet:", imgName)
                 wb.remove(wb[imgName])
-                print(" wb.sheetnames:", wb.sheetnames)
+                print("wb.sheetnames:", wb.sheetnames)
         else:
             writer = pd.ExcelWriter(fileName, mode='w', engine='openpyxl')
 
@@ -208,3 +215,5 @@ def test_main(imgTuple: tuple, positions: tuple, fileNameTuple: tuple, pixelSize
         print(e, flush = True)
         return cnt
 
+if __name__=='__main__':
+    readExcelFile("../result.xlsx", "04.bmp")

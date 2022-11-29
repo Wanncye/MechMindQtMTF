@@ -28,8 +28,6 @@ struct roiRect
     QRectF rect;
 };
 
-// auto _dummy = qRegisterMetaType<std::vector<roiRect>>("std::vector<roiRect>");
-
 class myRectProcessor;
 
 class LabelPainterTool : public QLabel

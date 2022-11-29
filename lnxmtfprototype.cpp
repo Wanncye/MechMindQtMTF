@@ -109,6 +109,8 @@ void LNXMTFPrototype::on_calcMTF_clicked()
     }
     ui->lineChart->resetChartSeries(seriesNames);
     ui->lineChart->setAxisTitle("x", "MTF");
+    // 模拟一下MTF数据， 将他显示出来
+
     ui->viewersTabs->setCurrentWidget(ui->mtfCurveTab);
 }
 
