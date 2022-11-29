@@ -59,7 +59,7 @@ vector<QColor> genMultiColors(int count)
     const int h = rand() % len;
     vector<QColor> rgbColors;
     for (int i = 0; i < count; ++i)
-        rgbColors.emplace_back(h + len * i, 255, 255);
+        rgbColors.emplace_back(QColor::fromHsv(h + len * i, 255, 255));
     return rgbColors;
 }
 

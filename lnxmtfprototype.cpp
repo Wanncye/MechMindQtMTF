@@ -1,10 +1,13 @@
 #include "lnxmtfprototype.h"
+#include "labelpaintertool.h"
 #include "ui_lnxmtfprototype.h"
 
 #include <QFileDialog>
 #include <QDebug>
 #include <QMessageBox>
 #include <QPainter>
+
+#define print(val) qDebug() << #val << val
 
 LNXMTFPrototype::LNXMTFPrototype(QWidget* parent) : QWidget(parent), ui(new Ui::LNXMTFPrototype)
 {
@@ -17,6 +20,8 @@ LNXMTFPrototype::LNXMTFPrototype(QWidget* parent) : QWidget(parent), ui(new Ui::
     ui->chooseRoi->setEnabled(false);
     ui->editRoi->setEnabled(false);
     ui->viewersTabs->setCurrentWidget(ui->imgTab);
+    connect(ui->imgView, &LabelPainterTool::sendFieldRects, this,
+            &LNXMTFPrototype::recieveFieldRects);
 }
 
 LNXMTFPrototype::~LNXMTFPrototype() { delete ui; }
@@ -52,7 +57,7 @@ void LNXMTFPrototype::on_loadImg_clicked()
                                       {true, true, false, false, true, false, false, false, true},
                                       {true, true, false, false, true, false, false, false, true},
                                       {true, true, false, false, true, false, false, false, true}};
-    QVector<roiRect> allROI = ui->imgView->getRectProcessor()->getRoIRects(
+    std::vector<roiRect> allROI = ui->imgView->getRectProcessor()->getRoIRects(
         img, roiBool, img.width(), img.height(), ui->roiWidth->value(), ui->roiHeight->value());
 
     ui->imgView->addFieldRectangle(allROI);
@@ -63,14 +68,48 @@ void LNXMTFPrototype::on_loadImg_clicked()
     ui->chooseRoi->setEnabled(true);
     ui->chooseRoi->setChecked(true);
     ui->editRoi->setEnabled(true);
+    ui->viewersTabs->setCurrentWidget(ui->imgTab);
+}
+
+QStringList genSeriesNames(const std::vector<roiRect>& rects)
+{
+    QStringList dst;
+    for (auto& roi : rects) {
+        if (!roi.checked)
+            continue;
+        QString direction;
+        switch (roi.d) {
+        case ne:
+            direction = "NE";
+            break;
+        case nw:
+            direction = "NW";
+            break;
+        case sw:
+            direction = "SW";
+            break;
+        case se:
+            direction = "SE";
+            break;
+        default:
+            break;
+        }
+        QString offset = QString::number(roi.offset);
+        dst.push_back(QStringLiteral("%1%2").arg(direction, offset));
+    }
+    return dst;
 }
 
 void LNXMTFPrototype::on_calcMTF_clicked()
 {
-    //    ui->lineChart->resetChartSeries(genSeriesNames(3));
-    //    ui->viewersTabs->setCornerWidget(ui->mtfCurveTab);
-    //    ui->lineChart->resetChartSeries({"123", "456"});
-    //    ui->lineChart->setAxisTitle("x", "y");
+    auto seriesNames = genSeriesNames(mFieldRects);
+    if (seriesNames.isEmpty()) {
+        qDebug() << "seriesNames NULL";
+        return;
+    }
+    ui->lineChart->resetChartSeries(seriesNames);
+    ui->lineChart->setAxisTitle("x", "MTF");
+    ui->viewersTabs->setCurrentWidget(ui->mtfCurveTab);
 }
 
 void LNXMTFPrototype::on_zoomIn_clicked() { ui->imgView->onZoomInImage(); }
@@ -97,3 +136,5 @@ void LNXMTFPrototype::on_editRoi_clicked(bool checked)
 }
 
 void LNXMTFPrototype::clear() { ui->imgView->clearFieldRect(); }
+
+void LNXMTFPrototype::recieveFieldRects(std::vector<roiRect>& rects) { mFieldRects = rects; }

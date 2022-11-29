@@ -1,6 +1,7 @@
 #include "labelpaintertool.h"
 #include <QStyleOption>
 #include <QScrollArea>
+
 LabelPainterTool::LabelPainterTool(QWidget* parent) : QLabel(parent) {}
 LabelPainterTool::~LabelPainterTool() {}
 
@@ -68,6 +69,7 @@ void LabelPainterTool::mousePressEvent(QMouseEvent* event)
                 break;
             }
         }
+        emit sendFieldRects(mFieldRects);
         break;
     }
     case edit:
@@ -184,7 +186,7 @@ void LabelPainterTool::onZoomOutImage(void)
     update();
 }
 
-void LabelPainterTool::addFieldRectangle(QVector<roiRect>& roiRects)
+void LabelPainterTool::addFieldRectangle(std::vector<roiRect>& roiRects)
 {
     for (auto& roi : roiRects)
         mFieldRects.push_back(roi);
@@ -198,13 +200,13 @@ void LabelPainterTool::clearFieldRect()
     mManualRects.clear();
 }
 
-QVector<roiRect> myRectProcessor::getRoIRects(const QImage& img,
-                                              const QVector<QVector<bool>>& roiPos, const int& imgW,
-                                              const int& imgH, const double& roiW,
-                                              const double& roiH)
+std::vector<roiRect> myRectProcessor::getRoIRects(const QImage& img,
+                                                  const QVector<QVector<bool>>& roiPos,
+                                                  const int& imgW, const int& imgH,
+                                                  const double& roiW, const double& roiH)
 {
-    QVector<roiRect> roiRects;
-    roiRects.reserve(roiPos.size() * roiPos.front().size());
+    std::vector<roiRect> roiRects;
+    roiRects.reserve(16);
     mOffsetH = -imgH / 2.0;
     mOffsetW = -imgW / 2.0;
     QRectF ImgRect = QRectF(-imgW / 2.0, -imgH / 2.0, imgW, imgH);

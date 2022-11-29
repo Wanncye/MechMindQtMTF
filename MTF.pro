@@ -3,6 +3,7 @@ QT       += core gui
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 QT += charts
 QT += core
+QT += gui
 
 CONFIG += c++11, sdk_no_version_check
 QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.15

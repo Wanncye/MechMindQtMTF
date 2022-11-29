@@ -28,11 +28,13 @@ struct roiRect
     QRectF rect;
 };
 
+// auto _dummy = qRegisterMetaType<std::vector<roiRect>>("std::vector<roiRect>");
+
 class myRectProcessor;
 
 class LabelPainterTool : public QLabel
 {
-    // Q_OBJECT
+    Q_OBJECT
 public:
     explicit LabelPainterTool(QWidget* parent = nullptr);
     ~LabelPainterTool() override;
@@ -45,7 +47,7 @@ public:
     void onZoomInImage(void);
     void onZoomOutImage(void);
 
-    void addFieldRectangle(QVector<roiRect>& roiRects);
+    void addFieldRectangle(std::vector<roiRect>& roiRects);
 
     void setRectProcessor(myRectProcessor* processor) { mRectProcessor = processor; }
     void setImg(QImage& img) { mImage = img; }
@@ -55,12 +57,11 @@ public:
     void clearFieldRect();
 
 signals:
-    void StartPointSignal(QPointF p);
-    void StopPointSignal(QPointF p);
+    void sendFieldRects(std::vector<roiRect>& rects);
 
 private:
-    QVector<roiRect> mFieldRects; // 十三个视场矩形
-    QVector<QRectF> mManualRects; // 手动选择的视场
+    std::vector<roiRect> mFieldRects; // 十三个视场矩形
+    QVector<QRectF> mManualRects;     // 手动选择的视场
     myRectProcessor* mRectProcessor;
     QImage mImage;
 
@@ -80,9 +81,9 @@ public:
     friend class LabelPainterTool;
     myRectProcessor() = default;
     // 根据roiPos的布尔值得到img对应的所有ROI区域
-    QVector<roiRect> getRoIRects(const QImage& img, const QVector<QVector<bool>>& roiPos,
-                                 const int& imgW, const int& imgH, const double& roiW,
-                                 const double& roiH);
+    std::vector<roiRect> getRoIRects(const QImage& img, const QVector<QVector<bool>>& roiPos,
+                                     const int& imgW, const int& imgH, const double& roiW,
+                                     const double& roiH);
     inline QPointF ToRelativePos(const QPointF& pos);
     // 将矩形从以左上角为原点的坐标系坐标，转化为以图像中心为原点的坐标系坐标
     inline QRectF rectToRelativePos(const QRectF& rect);

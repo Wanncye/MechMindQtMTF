@@ -7,6 +7,8 @@ namespace Ui {
 class LNXMTFPrototype;
 }
 
+struct roiRect;
+
 class LNXMTFPrototype : public QWidget
 {
     Q_OBJECT
@@ -23,9 +25,12 @@ public slots:
     void on_chooseRoi_clicked(bool checked);
     void on_editRoi_clicked(bool checked);
 
+    void recieveFieldRects(std::vector<roiRect>& rects);
+
 private:
     void clear();
     Ui::LNXMTFPrototype* ui;
+    std::vector<roiRect> mFieldRects;
 };
 
 #endif // LNXMTFPROTOTYPE_H
