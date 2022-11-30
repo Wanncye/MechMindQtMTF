@@ -1,5 +1,6 @@
 #include <stdexcept>
 #include <QtCharts/QChart>
+#include <QDebug>
 #include <QtCharts/QLineSeries>
 #include <QtCharts/QSplineSeries>
 #include <QtCharts/QScatterSeries>
@@ -13,6 +14,8 @@ constexpr char kDefaultSeries[]{"Default"};
 constexpr char kDefaultColorName[]{"red"};
 constexpr int kDefaultTickCount = 10;
 constexpr qreal defaultMarkerSize = 1;
+
+#define print(val) qDebug() << #val << val
 
 template <class LessCompare>
 pair<QPointF, QPointF> findMinMaxPt(
@@ -42,6 +45,8 @@ inline pair<qreal, qreal> findMinMaxX(
 {
     const auto minMaxPt =
         findMinMaxPt(seriesMap, [](const QPointF& a, const QPointF& b) { return a.x() < b.x(); });
+    print(minMaxPt.first.x());
+    print(minMaxPt.second.x());
     return {minMaxPt.first.x(), minMaxPt.second.x()};
 }
 
@@ -50,6 +55,8 @@ inline pair<qreal, qreal> findMinMaxY(
 {
     const auto minMaxPt =
         findMinMaxPt(seriesMap, [](const QPointF& a, const QPointF& b) { return a.y() < b.y(); });
+    print(minMaxPt.first.y());
+    print(minMaxPt.second.y());
     return {minMaxPt.first.y(), minMaxPt.second.y()};
 }
 

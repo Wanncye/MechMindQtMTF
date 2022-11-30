@@ -222,7 +222,9 @@ std::vector<roiRect> myRectProcessor::getRoIRects(const QImage& img,
             newRect.d = static_cast<direction>(row);
             newRect.offset = (col + 1) * 0.1;
             newRect.rect = fromCenterPoint(points[row] * newRect.offset * mZoomValue, roiW, roiH);
-            newRect.img = img.copy(newRect.rect.toRect());
+            newRect.img = img.copy(rectToAbsolutePos(newRect.rect).toRect());
+            newRect.img.save("D:/MechMindQtMTF/img/img_" + QString::number(row) +
+                             QString::number(col) + ".png");
             newRect.checked = false;
             roiRects.push_back(newRect);
         }

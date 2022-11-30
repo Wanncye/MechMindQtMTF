@@ -22,7 +22,7 @@
   <property name="autoFillBackground">
    <bool>false</bool>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="3,1">
+  <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,3">
    <item>
     <layout class="QVBoxLayout" name="imgPart">
      <property name="rightMargin">
@@ -113,7 +113,7 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>340</width>
+                 <width>333</width>
                  <height>348</height>
                 </rect>
                </property>

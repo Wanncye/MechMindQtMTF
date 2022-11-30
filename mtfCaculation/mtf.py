@@ -358,9 +358,7 @@ class MTF:
         """
         imgArr = Helper.CorrectImageOrientation(imgArr)
         edgeImg = cv2.Canny(np.uint8(imgArr*255), 40, 90, L2gradient=True)
-
         line = np.argwhere(edgeImg == 255)
-        #print(line)
         edgePoly = np.polyfit(line[:,1],line[:,0],1)
         angle = math.degrees(math.atan(-edgePoly[0]))
 
@@ -369,9 +367,7 @@ class MTF:
             imgArr = np.flip(imgArr, axis=1)
             finalEdgePoly[1] = np.polyval(edgePoly,np.size(imgArr,1)-1)
             finalEdgePoly[0] = -edgePoly[0]
-
         esf = MTF.GetEdgeSpreadFunction(imgArr, finalEdgePoly, Verbosity.NONE)
-
         esfValues = esf.y
         esfDistances = esf.x
         #print(esfDistances)  [-22.19949402 -22.02537062 -21.85124722 ...  24.26850235  24.44262575   24.61674915]
@@ -380,7 +376,6 @@ class MTF:
         minimum = np.amin(esfValues)
 
         threshold = (maximum - minimum) * 0.1
-
         #print(maximum)  0.615686274509804
         #print(minimum)   0.011764705882352941
         #print(threshold)  0.06039215686274511
@@ -404,7 +399,6 @@ class MTF:
         InterpValues = np.interp(InterpDistances, esfRaw.x, ysmooth)
         
         esfInterp = cSet(InterpDistances, InterpValues)
-
         if (verbose == Verbosity.BRIEF):
             print("ESF Crop [done] (Distance from {0:2.2f} to {1:2.2f})".format(esfRaw.x[0], esfRaw.x[-1]))
 
@@ -572,7 +566,6 @@ class MTF:
         cMTF
             MTF value set 
         """
-
         imgArr = Helper.CorrectImageOrientation(imgArr)
         esf = MTF.GetEdgeSpreadFunctionCrop(imgArr, Verbosity.NONE)
         lsf = MTF.GetLineSpreadFunction(esf.interpESF, True, Verbosity.NONE)

@@ -10,17 +10,13 @@
 //#include <iostream>
 //#include <QHash>
 
-
-
-
-
 bool isFirst = true;
 std::vector<std::vector<double>> QimageToArray(const QImage& image);
 
 DanLeiMTFCalc::DanLeiMTFCalc(QWidget* parent) : QWidget(parent), ui(new Ui::DanLeiMTFCalc)
 {
     ui->setupUi(this);
-    setWindowState (Qt::WindowMaximized);
+    setWindowState(Qt::WindowMaximized);
     this->setWindowTitle(QStringLiteral("MTF Tool"));
 
     ui->c0CB->setEnabled(false);
@@ -145,15 +141,20 @@ void DanLeiMTFCalc::on_pushButton_clicked()
                 switch (result) {
                 case QMessageBox::Yes:
                 {
-//                    roiSelectionWindow = new ROISelectionWindow(strPathList.at(i), false, ROIW,
-//                                                                ROIH, errRectf, trueRectf, nullptr);
-//                    roiSelectionWindow->show();
-//                    result = processCode();
-//                    roiSelectionWindow->close();
+                    //                    roiSelectionWindow = new
+                    //                    ROISelectionWindow(strPathList.at(i), false, ROIW,
+                    //                                                                ROIH,
+                    //                                                                errRectf,
+                    //                                                                trueRectf,
+                    //                                                                nullptr);
+                    //                    roiSelectionWindow->show();
+                    //                    result = processCode();
+                    //                    roiSelectionWindow->close();
                     //对每个异常进行手动处理
                     while (!errROI.isEmpty() && result != QMessageBox::Cancel) {
                         // 生成这个，是为了得到用户选择的框
-                        roiSelectionWindow = new ROISelectionWindow(strPathList.at(i), errRectf.front(), true);
+                        roiSelectionWindow =
+                            new ROISelectionWindow(strPathList.at(i), errRectf.front(), true);
                         connect(roiSelectionWindow, &ROISelectionWindow::sendConfirmImgs, this,
                                 &DanLeiMTFCalc::getNewImgs);
                         roiSelectionWindow->exec();
@@ -163,11 +164,13 @@ void DanLeiMTFCalc::on_pushButton_clicked()
                             if (calcMTF(signleRoiRect, strPathList.at(i), false)) {
                                 errROI.pop_front();
                                 errRectf.pop_front();
-                                trueROI.push_front(signleRoiRect.front()); //正确的roi保留 同时删除错误
+                                trueROI.push_front(
+                                    signleRoiRect.front()); //正确的roi保留 同时删除错误
                             } else {
                                 result = processCode();
                                 if (result == QMessageBox::No) {
-                                    trueROI.push_back(errROI.front()); // NO处理 则对错误的roi保留
+                                    trueROI.push_back(
+                                        errROI.front()); // NO处理 则对错误的roi保留
                                                          // cancel是什么都不错 既不保存 也不处理
                                     errROI.pop_front();
                                     errRectf.pop_front();
@@ -224,8 +227,7 @@ int DanLeiMTFCalc::processCode()
 }
 
 // 调用python脚本计算roiRects里面的MTF值
-bool DanLeiMTFCalc::calcMTF(const QVector<roiRect>& roiRects, const QString& strPath,
-                                     bool isSave)
+bool DanLeiMTFCalc::calcMTF(const QVector<roiRect>& roiRects, const QString& strPath, bool isSave)
 {
     std::vector<std::vector<std::vector<double>>> img;
     for (const auto& roi : qAsConst(roiRects)) {

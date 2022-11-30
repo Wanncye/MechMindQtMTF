@@ -1,6 +1,7 @@
 #include "lnxmtfprototype.h"
 #include "labelpaintertool.h"
 #include "ui_lnxmtfprototype.h"
+#include "mtfCaculation/callPythonScripts.h"
 
 #include <QFileDialog>
 #include <QDebug>
@@ -75,8 +76,6 @@ QStringList genSeriesNames(const std::vector<roiRect>& rects)
 {
     QStringList dst;
     for (auto& roi : rects) {
-        if (!roi.checked)
-            continue;
         QString direction;
         switch (roi.d) {
         case ne:
@@ -100,16 +99,73 @@ QStringList genSeriesNames(const std::vector<roiRect>& rects)
     return dst;
 }
 
+std::vector<std::vector<double>> QimageToArrayLNX(const QImage& image)
+{
+    int width = image.width();
+    int height = image.height();
+
+    std::vector<std::vector<double>> pixelMat;
+
+    pixelMat.resize(height);
+    for (int row = 0; row < height; row++) {
+        pixelMat[row].resize(width);
+        const auto* data = reinterpret_cast<const quint8*>(image.scanLine(row));
+        for (int column = 0; column < width; column++) {
+            pixelMat[row][column] = data[column];
+        }
+    }
+
+    return pixelMat;
+}
+
 void LNXMTFPrototype::on_calcMTF_clicked()
 {
-    auto seriesNames = genSeriesNames(mFieldRects);
+    print("click calcMTF");
+    if (mFieldRects.empty()) {
+        qDebug() << "mFieldRects NULL";
+        return;
+    }
+
+    // 模拟一下MTF数据， 将他显示出来
+    std::vector<std::vector<std::vector<double>>> img;
+    std::vector<std::vector<double>> mtfData;
+    std::vector<roiRect> checkedROI;
+    int ifsf = 0;
+    for (const auto& roi : qAsConst(mFieldRects)) {
+        if (!roi.checked)
+            continue;
+        checkedROI.push_back(roi);
+        img.push_back(QimageToArrayLNX(roi.img));
+        ifsf++;
+    }
+    std::vector<std::vector<double>> information;
+    for (const auto& roi : qAsConst(mFieldRects)) {
+        if (!roi.checked)
+            continue;
+        information.push_back({roi.rect.topLeft().x(), roi.rect.topLeft().y(),
+                               roi.rect.bottomRight().x(), roi.rect.bottomRight().y(), roi.offset,
+                               (double)roi.d, (double)true});
+    }
+    const std::string fileName = "test.png";
+    const std::string savefileName = "result.xlsx";
+    const double pixelSize = 5;
+    print("Begin call python");
+    callPythonReturnMTFData(img, information, savefileName, fileName, pixelSize, mtfData);
+    print(mtfData.size());
+
+    auto seriesNames = genSeriesNames(checkedROI);
     if (seriesNames.isEmpty()) {
         qDebug() << "seriesNames NULL";
         return;
     }
     ui->lineChart->resetChartSeries(seriesNames);
     ui->lineChart->setAxisTitle("x", "MTF");
-    // 模拟一下MTF数据， 将他显示出来
+    for (int i = 0; i < mtfData.size(); ++i) {
+        print(seriesNames[i]);
+        print(mtfData);
+        print(ui->lineChart->setValues(seriesNames[i], mtfData[i]));
+        ui->lineChart->scaleAxes();
+    }
 
     ui->viewersTabs->setCurrentWidget(ui->mtfCurveTab);
 }

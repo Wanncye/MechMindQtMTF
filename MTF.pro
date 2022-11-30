@@ -26,6 +26,7 @@ SOURCES += \
     lnxmtfprototype.cpp \
     main.cpp \
     mainwindow.cpp \
+    mtfCaculation/callPythonScripts.cpp \
     mtfcalc.cpp \
     ROISelectionWindow.cpp
 

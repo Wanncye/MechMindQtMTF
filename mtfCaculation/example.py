@@ -3,14 +3,17 @@ import numpy as np
 import mtf as mtf
 import pandas as pd
 import os
+import matplotlib.pyplot as plt
+import pylab
 
-def readExcelFile(fileName: str, imgName):
+def readExcelFile(fileName: str, imgName) -> list:
     df = pd.read_excel(fileName, sheet_name=imgName)
-    print(df.head(5))
-    print(df.iloc[0][0])
-    print(df.iloc[0][1])
-    print(df.iloc[0][2])
-    return
+    # MTF数值，获取的是整个表的数据，因为在计算界面还有MTF错误的显示
+    colum = df.columns.size
+    roiMTFValueList = []
+    for col in range(1, colum):
+        roiMTFValueList.append(list(df.iloc[:,col]))
+    return roiMTFValueList
 
 def writeToExcelFile(fileName: str, data: tuple, imgName: str='') -> bool:
     # pandas的版本得是1.2.5
@@ -144,6 +147,7 @@ def test_main(imgTuple: tuple, positions: tuple, fileNameTuple: tuple, pixelSize
     print("start test_main", flush = True)
     try:
         imgLen = len(imgTuple)
+        print("imgLen", imgLen)
         cnt = imgLen
         saveFileName = str(fileNameTuple[0], 'gbk')
         imgName = str(fileNameTuple[1], 'gbk')
@@ -151,7 +155,6 @@ def test_main(imgTuple: tuple, positions: tuple, fileNameTuple: tuple, pixelSize
 
         data = list()
         errRoiId = list()
-
         for i in range(imgLen):
             over_exp_err = 0 #过曝
             edge_estim_err = 0  #刃边估计错误
@@ -170,7 +173,6 @@ def test_main(imgTuple: tuple, positions: tuple, fileNameTuple: tuple, pixelSize
             print("position[6]", position[6], flush = True)
             if (len(position) != 7):
                 raise ValueError('Positions Error!')
-
             for row in range(len(imgTuple[i])):
                 for column in range(len(imgTuple[i][row])):
                     if imgTuple[i][row][column] >= 255 or imgTuple[i][row][column] < 0:
@@ -193,20 +195,18 @@ def test_main(imgTuple: tuple, positions: tuple, fileNameTuple: tuple, pixelSize
             isSaveFlag = int(position[6])
             if not isSaveFlag:
                continue #错误暂时不保存 该算法模块需添加一个是否需要保存数据的参数 来应对错误数据的是否保存
-
-
-
             tmpData = [res.mtfAtNyquist, position[0], position[1], position[2], position[3], over_exp_err, edge_estim_err, mtf_err, deg_err, position[4], dire]
             tmpData.extend(res.y)
             data.append(tmpData)
-
 
         isSaved =  writeToExcelFile(saveFileName, data, imgName=imgName)
         if not isSaved:
             print('Cannot save!', flush = True)
         else:
             print("save sucessfully!", flush = True)
-        return errRoiId
+
+        return errRoiId, data
+#        return errRoiId
 
 
 
