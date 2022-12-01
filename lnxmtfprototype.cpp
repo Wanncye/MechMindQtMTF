@@ -86,7 +86,6 @@ void LNXMTFPrototype::on_loadImg_clicked()
          false, false, ui->SE09->isChecked()}};
     mFieldRects = ui->imgView->getRectProcessor()->getRoIRects(
         img, roiBool, img.width(), img.height(), ui->roiWidth->value(), ui->roiHeight->value());
-    print(mFieldRects.size());
 
     ui->imgView->addFieldRectangle(mFieldRects);
 
@@ -233,26 +232,25 @@ void LNXMTFPrototype::showTable()
 void LNXMTFPrototype::showChart()
 {
     // 设置图
-    print("begin resetChartSeries");
     ui->feild01->resetChartSeries(genSeriesNames(getSpecificFieldRect(0.1)));
     ui->feild02->resetChartSeries(genSeriesNames(getSpecificFieldRect(0.2)));
     ui->feild05->resetChartSeries(genSeriesNames(getSpecificFieldRect(0.5)));
     ui->feild09->resetChartSeries(genSeriesNames(getSpecificFieldRect(0.9)));
     for (int i = 0; i < mMtfData.size(); ++i) {
         if (mFieldRects[i].offset == 0.1) {
-            print(ui->feild01->setValues(genSeriesName(mFieldRects[i]), mMtfData[i]));
+            ui->feild01->setValues(genSeriesName(mFieldRects[i]), mMtfData[i]);
             ui->feild01->setRangeY(0, maxYAxies);
             ui->feild01->scaleAxisX();
         } else if (mFieldRects[i].offset == 0.2) {
-            print(ui->feild02->setValues(genSeriesName(mFieldRects[i]), mMtfData[i]));
+            ui->feild02->setValues(genSeriesName(mFieldRects[i]), mMtfData[i]);
             ui->feild02->setRangeY(0, maxYAxies);
             ui->feild02->scaleAxisX();
         } else if (mFieldRects[i].offset == 0.5) {
-            print(ui->feild05->setValues(genSeriesName(mFieldRects[i]), mMtfData[i]));
+            ui->feild05->setValues(genSeriesName(mFieldRects[i]), mMtfData[i]);
             ui->feild05->setRangeY(0, maxYAxies);
             ui->feild05->scaleAxisX();
         } else if (mFieldRects[i].offset == 0.9) {
-            print(ui->feild09->setValues(genSeriesName(mFieldRects[i]), mMtfData[i]));
+            ui->feild09->setValues(genSeriesName(mFieldRects[i]), mMtfData[i]);
             ui->feild09->setRangeY(0, maxYAxies);
             ui->feild09->scaleAxisX();
         }
@@ -267,29 +265,30 @@ std::vector<roiRect> LNXMTFPrototype::getSpecificFieldRect(double offset)
         if (rect.offset == offset)
             dst.push_back(rect);
     }
-    print("getSpecificFieldRect done");
     return dst;
 }
 
 void LNXMTFPrototype::on_calcMTF_clicked()
 {
-    //    while (1) {
-    print("click calcMTF");
-    if (mFieldRects.empty()) {
-        qDebug() << "mFieldRects NULL";
-        return;
-    }
+    while (1) {
+        PythonInit();
+        print("click calcMTF");
+        if (mFieldRects.empty()) {
+            qDebug() << "mFieldRects NULL";
+            return;
+        }
 
-    // 模拟一下MTF数据， 将他显示出来
-    // 这个事要拿另外的线程来做，要不然会阻塞IO
-    calcMTF(mFieldRects, "D:/验收软件支持/沙姆MTF/03.bmp", false);
+        // 模拟一下MTF数据， 将他显示出来
+        // 这个事要拿另外的线程来做，要不然会阻塞IO
+        calcMTF(mFieldRects, "D:/验收软件支持/沙姆MTF/03.bmp", false);
 
-    if (mMtfData.empty()) {
-        warnMoveROI();
-        return;
+        if (mMtfData.empty()) {
+            warnMoveROI();
+            return;
+        }
+        showChart();
+        showTable();
     }
-    showChart();
-    showTable();
 }
 
 void LNXMTFPrototype::on_zoomIn_clicked() { ui->imgView->onZoomInImage(); }

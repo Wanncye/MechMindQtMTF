@@ -15,10 +15,10 @@ void PythonInit()
         Py_SetPythonHome(L"C:/Users/mech-mind/anaconda3/envs/qt");
         Py_Initialize();
         if (!Py_IsInitialized()) {
-            qDebug("Initial Python failed!");
+            print("Initial Python failed!");
         } else {
+            print("Initial sucess!");
             PyEval_InitThreads();
-
             PyRun_SimpleString("import sys");
             PyRun_SimpleString("sys.path.append('D:/MechMindQtMTF/mtfCaculation')");
             PyEval_ReleaseThread(PyThreadState_Get());
@@ -67,7 +67,6 @@ QVector<int> callPython(const std::vector<std::vector<std::vector<double>>>& img
         }
         PyTuple_SET_ITEM(imgArray, i, rowItem);
     }
-    print("-----------------debug-----------------");
     Py_ssize_t rowLen = information.size();
     PyObject* informationArray = PyTuple_New(rowLen);
     for (Py_ssize_t i = 0; i < rowLen; i++) {
@@ -154,6 +153,7 @@ QVector<int> callPythonReturnMTFData(const std::vector<std::vector<std::vector<d
         }
         PyTuple_SET_ITEM(imgArray, i, rowItem);
     }
+    print("--------debug-----------");
     Py_ssize_t rowLen = information.size();
     PyObject* informationArray = PyTuple_New(rowLen);
     for (Py_ssize_t i = 0; i < rowLen; i++) {
@@ -185,7 +185,6 @@ QVector<int> callPythonReturnMTFData(const std::vector<std::vector<std::vector<d
         print("return is tuple");
         errorRet = PyTuple_GetItem(pRet, 0);
         int sizeOfList = PyList_Size(errorRet);
-        print(sizeOfList);
         for (int i = 0; i < sizeOfList; i++) {
             PyObject* listItem = PyList_GetItem(errorRet, i);
             errRoiId.push_back(PyLong_AsLong(listItem));
@@ -230,5 +229,6 @@ QVector<int> callPythonReturnMTFData(const std::vector<std::vector<std::vector<d
         print("return is Number");
     }
     Py_DECREF(pRet);
+    print("---------------------return callPythonReturnMTFData-------------------");
     return errRoiId;
 }

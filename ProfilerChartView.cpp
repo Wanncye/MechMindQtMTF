@@ -45,8 +45,6 @@ inline pair<qreal, qreal> findMinMaxX(
 {
     const auto minMaxPt =
         findMinMaxPt(seriesMap, [](const QPointF& a, const QPointF& b) { return a.x() < b.x(); });
-    print(minMaxPt.first.x());
-    print(minMaxPt.second.x());
     return {minMaxPt.first.x(), minMaxPt.second.x()};
 }
 
@@ -85,7 +83,6 @@ void ProfilerChartView::resetChartSeries(const QColor& color)
 void ProfilerChartView::resetChartSeries(const QStringList& names)
 {
     if (names.isEmpty()) {
-        qDebug() << "name is empty";
         resetChartSeries();
         return;
     }

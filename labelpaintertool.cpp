@@ -156,9 +156,9 @@ void LabelPainterTool::onZoomOutImage(void)
 
 void LabelPainterTool::addFieldRectangle(std::vector<roiRect>& roiRects)
 {
-    for (auto& roi : roiRects)
-        mFieldRects.push_back(roi);
-
+    //    for (auto& roi : roiRects)
+    //        mFieldRects.push_back(roi);
+    mFieldRects = roiRects;
     update();
 }
 
@@ -190,7 +190,6 @@ std::vector<roiRect> myRectProcessor::getRoIRects(const QImage& img,
             newRect.img = img.copy(rectToAbsolutePos(newRect.rect).toRect());
             newRect.img.save("D:/MechMindQtMTF/img/img_" + QString::number(row) + "_" +
                              QString::number(col) + ".png");
-            print("after save roi copy");
             roiRects.push_back(newRect);
         }
     }

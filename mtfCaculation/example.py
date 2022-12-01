@@ -164,13 +164,10 @@ def test_main(imgTuple: tuple, positions: tuple, fileNameTuple: tuple, pixelSize
             imgArr = np.asarray(imgTuple[i],dtype=np.double) / 255
             imgArr = mtf.Helper.CorrectImageOrientation(imgArr) #保证图片暗面朝上 与原模块处理一样
             res = mtf.MTF.CalculateMtf(imgArr, pixel_width)
-            print("mtf len: ", len(res.x))
             for index in range(len(res.x)-1):
                 if res.y[index] > 1.0000000000000002 or res.y[index] <= 0 or res.y[index]<res.y[index+1]:
                     mtf_err = 1 #MTF计算错误
             position = positions[i]
-            print("all position:", position, flush = True)
-            print("position[6]", position[6], flush = True)
             if (len(position) != 7):
                 raise ValueError('Positions Error!')
             for row in range(len(imgTuple[i])):
@@ -189,7 +186,6 @@ def test_main(imgTuple: tuple, positions: tuple, fileNameTuple: tuple, pixelSize
             diredict ={0:"ne",1:"nw",2:"sw",3:"se"}
             dire = diredict[position[5]]
             if deg_err or mtf_err or over_exp_err or edge_estim_err:
-                print("exist deg_err or mtf_err or over_exp_err or edge_estim_err!")
                 errRoiId.append(i)
                 find_err = 1
 #            isSaveFlag = int(position[6])
@@ -204,7 +200,7 @@ def test_main(imgTuple: tuple, positions: tuple, fileNameTuple: tuple, pixelSize
 #        return errRoiId
 
     except Exception as e:
-        print("error!!!!!!!!! in test_main", flush = True)
+        print("----------error in test_main---------", flush = True)
         print(e, flush = True)
         return cnt
 
