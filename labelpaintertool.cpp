@@ -170,7 +170,7 @@ void LabelPainterTool::mouseReleaseEvent(QMouseEvent* event)
 
 void LabelPainterTool::onZoomInImage(void)
 {
-    mRectProcessor->mZoomValue += 0.2;
+    mRectProcessor->mZoomValue += 0.1;
     if (mRectProcessor->mZoomValue >= 2) {
         mRectProcessor->mZoomValue = 2;
     }
@@ -179,9 +179,9 @@ void LabelPainterTool::onZoomInImage(void)
 
 void LabelPainterTool::onZoomOutImage(void)
 {
-    mRectProcessor->mZoomValue -= 0.2;
-    if (mRectProcessor->mZoomValue <= 0.2) {
-        mRectProcessor->mZoomValue = 0.2;
+    mRectProcessor->mZoomValue -= 0.1;
+    if (mRectProcessor->mZoomValue <= 0.1) {
+        mRectProcessor->mZoomValue = 0.1;
     }
     update();
 }

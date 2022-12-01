@@ -7,6 +7,7 @@
 #include <QDebug>
 #include <QMessageBox>
 #include <QPainter>
+#include <QThread>
 
 #define print(val) qDebug() << #val << val
 
@@ -18,11 +19,10 @@ LNXMTFPrototype::LNXMTFPrototype(QWidget* parent) : QWidget(parent), ui(new Ui::
     setWindowState(Qt::WindowMaximized);
     ui->zoomIn->setEnabled(false);
     ui->zoomOut->setEnabled(false);
-    ui->chooseRoi->setEnabled(false);
     ui->editRoi->setEnabled(false);
-    ui->viewersTabs->setCurrentWidget(ui->imgTab);
     connect(ui->imgView, &LabelPainterTool::sendFieldRects, this,
             &LNXMTFPrototype::recieveFieldRects);
+    PythonInit();
 }
 
 LNXMTFPrototype::~LNXMTFPrototype() { delete ui; }
@@ -50,7 +50,6 @@ void LNXMTFPrototype::on_loadImg_clicked()
     }
     ui->imgView->setParentScrollArea(ui->scrollArea);
     ui->imgView->setImg(img);
-    //    ui->imgView->setPixmap(QPixmap::fromImage(img));
 
     // 要在图上画好13个ROI框
     ui->imgView->setRectProcessor(new myRectProcessor);
@@ -66,10 +65,7 @@ void LNXMTFPrototype::on_loadImg_clicked()
     // 使能编辑图片相关按钮
     ui->zoomIn->setEnabled(true);
     ui->zoomOut->setEnabled(true);
-    ui->chooseRoi->setEnabled(true);
-    ui->chooseRoi->setChecked(true);
     ui->editRoi->setEnabled(true);
-    ui->viewersTabs->setCurrentWidget(ui->imgTab);
 }
 
 QStringList genSeriesNames(const std::vector<roiRect>& rects)
@@ -120,6 +116,7 @@ std::vector<std::vector<double>> QimageToArrayLNX(const QImage& image)
 
 void LNXMTFPrototype::on_calcMTF_clicked()
 {
+    //    while (1) {
     print("click calcMTF");
     if (mFieldRects.empty()) {
         qDebug() << "mFieldRects NULL";
@@ -127,6 +124,7 @@ void LNXMTFPrototype::on_calcMTF_clicked()
     }
 
     // 模拟一下MTF数据， 将他显示出来
+    // 这个事要拿另外的线程来做，要不然会阻塞IO
     std::vector<std::vector<std::vector<double>>> img;
     std::vector<std::vector<double>> mtfData;
     std::vector<roiRect> checkedROI;
@@ -142,53 +140,40 @@ void LNXMTFPrototype::on_calcMTF_clicked()
     for (const auto& roi : qAsConst(mFieldRects)) {
         if (!roi.checked)
             continue;
+        // 为什么information中是否保存这一项设置为true时，会出现闪退的情况？
         information.push_back({roi.rect.topLeft().x(), roi.rect.topLeft().y(),
                                roi.rect.bottomRight().x(), roi.rect.bottomRight().y(), roi.offset,
-                               (double)roi.d, (double)true});
+                               (double)roi.d, (double)false});
     }
     const std::string fileName = "test.png";
     const std::string savefileName = "result.xlsx";
     const double pixelSize = 5;
     print("Begin call python");
     callPythonReturnMTFData(img, information, savefileName, fileName, pixelSize, mtfData);
-    print(mtfData.size());
-
+    print("Finish call python");
     auto seriesNames = genSeriesNames(checkedROI);
     if (seriesNames.isEmpty()) {
         qDebug() << "seriesNames NULL";
         return;
     }
-    ui->lineChart->resetChartSeries(seriesNames);
-    ui->lineChart->setAxisTitle("x", "MTF");
+    ui->feild01->resetChartSeries(seriesNames);
+    ui->feild01->setAxisTitle("x", "MTF");
     for (int i = 0; i < mtfData.size(); ++i) {
         print(seriesNames[i]);
-        print(mtfData);
-        print(ui->lineChart->setValues(seriesNames[i], mtfData[i]));
-        ui->lineChart->scaleAxes();
+        print(ui->feild01->setValues(seriesNames[i], mtfData[i]));
+        ui->feild01->scaleAxes();
     }
-
-    ui->viewersTabs->setCurrentWidget(ui->mtfCurveTab);
+    //    }
 }
 
 void LNXMTFPrototype::on_zoomIn_clicked() { ui->imgView->onZoomInImage(); }
 void LNXMTFPrototype::on_zoomOut_clicked() { ui->imgView->onZoomOutImage(); }
-void LNXMTFPrototype::on_chooseRoi_clicked(bool checked)
-{
-    if (checked) {
-        ui->editRoi->setChecked(false);
-        ui->imgView->setOperateMode(choose);
-    } else {
-        ui->editRoi->setChecked(true);
-        ui->imgView->setOperateMode(edit);
-    }
-}
+
 void LNXMTFPrototype::on_editRoi_clicked(bool checked)
 {
     if (checked) {
-        ui->chooseRoi->setChecked(false);
         ui->imgView->setOperateMode(edit);
     } else {
-        ui->chooseRoi->setChecked(true);
         ui->imgView->setOperateMode(choose);
     }
 }

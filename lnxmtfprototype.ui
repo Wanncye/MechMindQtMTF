@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>736</width>
-    <height>556</height>
+    <width>882</width>
+    <height>758</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -22,7 +22,7 @@
   <property name="autoFillBackground">
    <bool>false</bool>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,3">
+  <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="2,3">
    <item>
     <layout class="QVBoxLayout" name="imgPart">
      <property name="rightMargin">
@@ -51,25 +51,6 @@
            </widget>
           </item>
           <item>
-           <widget class="QToolButton" name="chooseRoi">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="focusPolicy">
-             <enum>Qt::StrongFocus</enum>
-            </property>
-            <property name="text">
-             <string>Choose ROI</string>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QToolButton" name="editRoi">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -91,59 +72,35 @@
          </layout>
         </item>
         <item>
-         <widget class="QTabWidget" name="viewersTabs">
-          <property name="currentIndex">
-           <number>1</number>
+         <widget class="QScrollArea" name="scrollArea">
+          <property name="sizeAdjustPolicy">
+           <enum>QAbstractScrollArea::AdjustToContents</enum>
           </property>
-          <widget class="QWidget" name="imgTab">
-           <attribute name="title">
-            <string>ROI Editor</string>
-           </attribute>
-           <layout class="QHBoxLayout" name="horizontalLayout_6">
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="scrollAreaWidgetContents">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>309</width>
+             <height>608</height>
+            </rect>
+           </property>
+           <property name="layoutDirection">
+            <enum>Qt::LeftToRight</enum>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout">
             <item>
-             <widget class="QScrollArea" name="scrollArea">
-              <property name="sizeAdjustPolicy">
-               <enum>QAbstractScrollArea::AdjustToContents</enum>
+             <widget class="LabelPainterTool" name="imgView">
+              <property name="text">
+               <string>Please Choose Image</string>
               </property>
-              <property name="widgetResizable">
-               <bool>true</bool>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
               </property>
-              <widget class="QWidget" name="scrollAreaWidgetContents">
-               <property name="geometry">
-                <rect>
-                 <x>0</x>
-                 <y>0</y>
-                 <width>333</width>
-                 <height>348</height>
-                </rect>
-               </property>
-               <property name="layoutDirection">
-                <enum>Qt::LeftToRight</enum>
-               </property>
-               <layout class="QVBoxLayout" name="verticalLayout">
-                <item>
-                 <widget class="LabelPainterTool" name="imgView">
-                  <property name="text">
-                   <string>Please Choose Image</string>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignCenter</set>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
              </widget>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QWidget" name="mtfCurveTab">
-           <attribute name="title">
-            <string>MTF Curve</string>
-           </attribute>
-           <layout class="QHBoxLayout" name="horizontalLayout_9">
-            <item>
-             <widget class="MTFProfilerLineChart" name="lineChart"/>
             </item>
            </layout>
           </widget>
@@ -162,7 +119,7 @@
     </layout>
    </item>
    <item>
-    <layout class="QVBoxLayout" name="operatorPart">
+    <layout class="QVBoxLayout" name="operatorPart" stretch="1,3,1,1">
      <property name="sizeConstraint">
       <enum>QLayout::SetMaximumSize</enum>
      </property>
@@ -205,12 +162,178 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Pixel Size</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QDoubleSpinBox" name="doubleSpinBox"/>
+          </item>
          </layout>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="groupBox_5">
+          <property name="title">
+           <string>Feild Choose</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_2">
+           <item row="0" column="2">
+            <widget class="QCheckBox" name="EN02">
+             <property name="text">
+              <string>0.2</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QCheckBox" name="EN01">
+             <property name="text">
+              <string>0.1</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="3">
+            <widget class="QCheckBox" name="EN05">
+             <property name="text">
+              <string>0.5</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_2">
+             <property name="text">
+              <string>EN</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_4">
+             <property name="text">
+              <string>WS</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="4">
+            <widget class="QCheckBox" name="EN09">
+             <property name="text">
+              <string>0.9</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_3">
+             <property name="text">
+              <string>NW</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="label_5">
+             <property name="text">
+              <string>SE</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QCheckBox" name="NW01">
+             <property name="text">
+              <string>0.1</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QCheckBox" name="NW02">
+             <property name="text">
+              <string>0.2</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="3">
+            <widget class="QCheckBox" name="NW05">
+             <property name="text">
+              <string>0.5</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="4">
+            <widget class="QCheckBox" name="NW09">
+             <property name="text">
+              <string>0.9</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QCheckBox" name="WS01">
+             <property name="text">
+              <string>0.1</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="2">
+            <widget class="QCheckBox" name="WS02">
+             <property name="text">
+              <string>0.2</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="3">
+            <widget class="QCheckBox" name="WS05">
+             <property name="text">
+              <string>0.5</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="4">
+            <widget class="QCheckBox" name="WS09">
+             <property name="text">
+              <string>0.9</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QCheckBox" name="SE01">
+             <property name="text">
+              <string>0.1</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="2">
+            <widget class="QCheckBox" name="SE02">
+             <property name="text">
+              <string>0.2</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="3">
+            <widget class="QCheckBox" name="SE05">
+             <property name="text">
+              <string>0.5</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="4">
+            <widget class="QCheckBox" name="SE09">
+             <property name="text">
+              <string>0.9</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
         </item>
         <item>
          <widget class="QPushButton" name="calcMTF">
           <property name="text">
            <string>Calculate MTF</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="stopCalc">
+          <property name="text">
+           <string>Stop Calcuate</string>
           </property>
          </widget>
         </item>
@@ -234,113 +357,18 @@
        <property name="flat">
         <bool>false</bool>
        </property>
-       <layout class="QVBoxLayout" name="verticalLayout_5">
-        <item>
-         <widget class="QPushButton" name="pushButton_22">
-          <property name="text">
-           <string>CENTER</string>
-          </property>
-         </widget>
+       <layout class="QGridLayout" name="gridLayout">
+        <item row="1" column="0">
+         <widget class="MTFProfilerLineChart" name="feild05"/>
         </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_7">
-          <item>
-           <widget class="QPushButton" name="pushButton_16">
-            <property name="text">
-             <string>ES02</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButton_17">
-            <property name="text">
-             <string>ES05</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButton_15">
-            <property name="text">
-             <string>ES09</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
+        <item row="0" column="0">
+         <widget class="MTFProfilerLineChart" name="feild01"/>
         </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_5">
-          <item>
-           <widget class="QPushButton" name="pushButton_11">
-            <property name="text">
-             <string>WN02</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButton_10">
-            <property name="text">
-             <string>WN05</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButton_13">
-            <property name="text">
-             <string>WN09</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
+        <item row="0" column="1">
+         <widget class="MTFProfilerLineChart" name="feild02"/>
         </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_8">
-          <item>
-           <widget class="QPushButton" name="pushButton_19">
-            <property name="text">
-             <string>SW02</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButton_21">
-            <property name="text">
-             <string>SW05</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButton_20">
-            <property name="text">
-             <string>SW09</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_2">
-          <item>
-           <widget class="QPushButton" name="pushButton_5">
-            <property name="text">
-             <string>NE02</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButton_4">
-            <property name="text">
-             <string>NE05</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButton_3">
-            <property name="text">
-             <string>NE09</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
+        <item row="1" column="1">
+         <widget class="MTFProfilerLineChart" name="feild09"/>
         </item>
        </layout>
       </widget>

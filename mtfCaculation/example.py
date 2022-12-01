@@ -199,11 +199,11 @@ def test_main(imgTuple: tuple, positions: tuple, fileNameTuple: tuple, pixelSize
             tmpData.extend(res.y)
             data.append(tmpData)
 
-        isSaved =  writeToExcelFile(saveFileName, data, imgName=imgName)
-        if not isSaved:
-            print('Cannot save!', flush = True)
-        else:
-            print("save sucessfully!", flush = True)
+#        isSaved =  writeToExcelFile(saveFileName, data, imgName=imgName)
+#        if not isSaved:
+#            print('Cannot save!', flush = True)
+#        else:
+#            print("save sucessfully!", flush = True)
 
         return errRoiId, data
 #        return errRoiId
