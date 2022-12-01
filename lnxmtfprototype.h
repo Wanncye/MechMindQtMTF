@@ -28,8 +28,12 @@ public slots:
 
 private:
     void clear();
+    bool calcMTF(const std::vector<roiRect>& roiRects, const QString& imgPath, bool isSave);
+
     Ui::LNXMTFPrototype* ui;
     std::vector<roiRect> mFieldRects;
+    std::vector<std::vector<double>> mtfData;
+    std::vector<double> mtfControlInformation;
 };
 
 #endif // LNXMTFPROTOTYPE_H

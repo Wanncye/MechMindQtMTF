@@ -265,8 +265,8 @@ void ROISelectionWindow::onZoomInImage(void)
 void ROISelectionWindow::onZoomOutImage(void)
 {
     mZoomValue -= 0.2;
-    if (mZoomValue <= 1) {
-        mZoomValue = 1;
+    if (mZoomValue <= 0.2) {
+        mZoomValue = 0.2;
         return;
     }
 

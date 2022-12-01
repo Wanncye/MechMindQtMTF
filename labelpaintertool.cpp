@@ -32,52 +32,35 @@ void LabelPainterTool::paintEvent(QPaintEvent* event)
     painter.drawPixmap(windowRect, QPixmap::fromImage(mImage), imgRect);
     setPixmap(QPixmap::fromImage(mImage));
 
-    // 正在编辑的ROI
-    painter.setPen(QPen(QColor(255, 255, 0), 1));
-    painter.drawRect(QRectF(mMouseStartPoint.x(), mMouseStartPoint.y(),
-                            mMouseEndPoint.x() - mMouseStartPoint.x(),
-                            mMouseEndPoint.y() - mMouseStartPoint.y()));
-
-    // 十三个视场绘制
+    // 视场绘制
     painter.setPen(QPen(Qt::red, 4));
     for (const auto& roi : mFieldRects) {
         painter.drawRect(roi.rect);
-        if (roi.checked)
-            painter.fillRect(roi.rect, Qt::red);
     }
 
     // 中心点
     painter.drawRect(QRectF(-1, -1, 2, 2));
-
-    // 手动选择的视场绘制
-    painter.setPen(QPen(Qt::green, 2));
-    for (const auto& rect : mManualRects)
-        painter.drawRect(rect);
 }
 
 //鼠标按下
 void LabelPainterTool::mousePressEvent(QMouseEvent* event)
 {
     mPressed = true;
-    QPointF mouseRelativePos = mRectProcessor->ToRelativePos(event->pos());
+    mSelectedROIRectIndex = -1;
+    print(event->pos());
+    mMouseStartPoint = mRectProcessor->ToRelativePos(event->pos());
+    print(mMouseStartPoint);
+    print(mRectProcessor->ToAbsolutePos(mMouseStartPoint));
     switch (mOpMode) {
     case choose:
     {
-        for (auto& roi : mFieldRects) {
-            if (roi.rect.contains(mouseRelativePos)) {
-                roi.checked = !roi.checked;
-                break;
-            }
-        }
-        emit sendFieldRects(mFieldRects);
         break;
     }
     case edit:
     {
-        for (auto& roi : mFieldRects) {
-            if (roi.rect.contains(mouseRelativePos)) {
-                mMouseStartPoint = mouseRelativePos;
-                mMouseEndPoint = mouseRelativePos;
+        for (int i = 0; i < mFieldRects.size(); i++) {
+            if (mFieldRects.at(i).rect.contains(mMouseStartPoint)) {
+                mSelectedROIRectIndex = i;
                 break;
             }
         }
@@ -96,53 +79,26 @@ void LabelPainterTool::mouseMoveEvent(QMouseEvent* event)
         return QWidget::mouseMoveEvent(event);
     setCursor(Qt::CrossCursor);
 
-    QPointF mouseRelativePos = mRectProcessor->ToRelativePos(event->pos());
+    QPointF mouseCurrentPos = mRectProcessor->ToRelativePos(event->pos());
+    double xPtInterval = mouseCurrentPos.x() - mMouseStartPoint.x();
+    double yPtInterval = mouseCurrentPos.y() - mMouseStartPoint.y();
+    mMouseStartPoint = mouseCurrentPos;
     switch (mOpMode) {
     case choose:
         break;
     case edit:
     {
-        for (auto& roi : mFieldRects) {
-            if (roi.rect.contains(mouseRelativePos)) {
-                mMouseEndPoint = mouseRelativePos;
-                break;
-            }
-        }
+        // 移动ROI
+        mFieldRects[mSelectedROIRectIndex].rect =
+            QRectF(mFieldRects[mSelectedROIRectIndex].rect.topLeft() +
+                       QPointF(xPtInterval, yPtInterval) / mRectProcessor->mZoomValue,
+                   mFieldRects[mSelectedROIRectIndex].rect.bottomRight() +
+                       QPointF(xPtInterval, yPtInterval) / mRectProcessor->mZoomValue);
         break;
     }
     default:
         break;
     }
-    //    QPointF pos = event->pos();
-    //    double xPtInterval = pos.x() - mMouseStartPoint.x();
-    //    double yPtInterval = pos.y() - mMouseStartPoint.y();
-    //    mOldPos = pos;
-    //    if (!isEditROIRect) {
-    //        // 不是移动ROI操作，那就是移动画面的操作
-    //        mXPtInterval += xPtInterval;
-    //        mYPtInterval += yPtInterval;
-    //        normalizeInterval(width(), height());
-    //    } else {
-    //        if (!isManual) {
-    //            auto len = trueROIRects.length();
-    //            if (selectedROIRectIndex >= len) {
-    //                errROIRects[selectedROIRectIndex - len] =
-    //                    QRectF(errROIRects[selectedROIRectIndex - len].topLeft() +
-    //                               QPointF(xPtInterval, yPtInterval) / mZoomValue,
-    //                           errROIRects[selectedROIRectIndex - len].bottomRight() +
-    //                               QPointF(xPtInterval, yPtInterval) / mZoomValue);
-    //            } else {
-    //                trueROIRects[selectedROIRectIndex] =
-    //                    QRectF(trueROIRects[selectedROIRectIndex].topLeft() +
-    //                               QPointF(xPtInterval, yPtInterval) / mZoomValue,
-    //                           trueROIRects[selectedROIRectIndex].bottomRight() +
-    //                               QPointF(xPtInterval, yPtInterval) / mZoomValue);
-    //            }
-    //        } else {
-    //            EndPoint = ToRelativePos(event->pos());
-    //            emit StopPointSignal(EndPoint);
-    //        }
-    //    }
 
     update();
 }
@@ -158,7 +114,19 @@ void LabelPainterTool::mouseReleaseEvent(QMouseEvent* event)
         break;
     case edit:
     {
-        mManualRects.append(QRectF(mMouseStartPoint, mMouseEndPoint));
+        mFieldRects[mSelectedROIRectIndex].img = mImage.copy(
+            mRectProcessor->rectToAbsolutePos(mFieldRects[mSelectedROIRectIndex].rect).toRect());
+        print(mFieldRects[mSelectedROIRectIndex].rect.width());
+        print(mFieldRects[mSelectedROIRectIndex].rect.height());
+        print(mRectProcessor->rectToAbsolutePos(mFieldRects[mSelectedROIRectIndex].rect).width());
+        print(mRectProcessor->rectToAbsolutePos(mFieldRects[mSelectedROIRectIndex].rect).height());
+        print(mRectProcessor->rectToAbsolutePos(mFieldRects[mSelectedROIRectIndex].rect).toRect());
+
+        mFieldRects[mSelectedROIRectIndex].img.save(
+            "D:/MechMindQtMTF/img/img_" +
+            QString::number(static_cast<int>(mFieldRects[mSelectedROIRectIndex].d)) +
+            QString::number(mFieldRects[mSelectedROIRectIndex].offset) + ".png");
+        emit sendFieldRects(mFieldRects);
         break;
     }
     default:
@@ -194,12 +162,9 @@ void LabelPainterTool::addFieldRectangle(std::vector<roiRect>& roiRects)
     update();
 }
 
-void LabelPainterTool::clearFieldRect()
-{
-    mFieldRects.clear();
-    mManualRects.clear();
-}
+void LabelPainterTool::clearFieldRect() { mFieldRects.clear(); }
 
+// 得到的是移动坐标原点至图中心后的矩形ROI
 std::vector<roiRect> myRectProcessor::getRoIRects(const QImage& img,
                                                   const QVector<QVector<bool>>& roiPos,
                                                   const int& imgW, const int& imgH,
@@ -223,9 +188,9 @@ std::vector<roiRect> myRectProcessor::getRoIRects(const QImage& img,
             newRect.offset = (col + 1) * 0.1;
             newRect.rect = fromCenterPoint(points[row] * newRect.offset * mZoomValue, roiW, roiH);
             newRect.img = img.copy(rectToAbsolutePos(newRect.rect).toRect());
-            newRect.img.save("D:/MechMindQtMTF/img/img_" + QString::number(row) +
+            newRect.img.save("D:/MechMindQtMTF/img/img_" + QString::number(row) + "_" +
                              QString::number(col) + ".png");
-            newRect.checked = false;
+            print("after save roi copy");
             roiRects.push_back(newRect);
         }
     }

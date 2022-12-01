@@ -142,25 +142,16 @@ QVector<int> callPythonReturnMTFData(const std::vector<std::vector<std::vector<d
     print(imgArray);
     for (Py_ssize_t i = 0; i < Len; i++) {
         Py_ssize_t rowLen = img[i].size();
-        //        print(rowLen);
         PyObject* rowItem = PyTuple_New(rowLen);
-        //        print(rowItem);
         for (Py_ssize_t j = 0; j < rowLen; j++) {
             Py_ssize_t colLen = img[i][j].size();
-            //            print(colLen);
             PyObject* item = PyTuple_New(colLen);
             for (Py_ssize_t k = 0; k < colLen; k++) {
-                //                print("before item PyTuple_SET_ITEM");
                 PyTuple_SET_ITEM(item, k, PyFloat_FromDouble(img[i][j][k]));
-                //                print("after item PyTuple_SET_ITEM");
             }
-            //            print("before rowItem PyTuple_SET_ITEM");
             PyTuple_SET_ITEM(rowItem, j, item);
-            //            print("after rowItem PyTuple_SET_ITEM");
         }
-        //        print("before imgArray PyTuple_SET_ITEM");
         PyTuple_SET_ITEM(imgArray, i, rowItem);
-        //        print("after imgArray PyTuple_SET_ITEM");
     }
     Py_ssize_t rowLen = information.size();
     PyObject* informationArray = PyTuple_New(rowLen);
@@ -188,8 +179,8 @@ QVector<int> callPythonReturnMTFData(const std::vector<std::vector<std::vector<d
     Py_DECREF(pModule);
 
     QVector<int> errRoiId;
-    PyObject *errorRet = nullptr, *dataRet = nullptr;
     if (PyTuple_Check(pRet)) {
+        PyObject *errorRet = nullptr, *dataRet = nullptr;
         print("return is tuple");
         errorRet = PyTuple_GetItem(pRet, 0);
         int sizeOfList = PyList_Size(errorRet);
@@ -217,6 +208,9 @@ QVector<int> callPythonReturnMTFData(const std::vector<std::vector<std::vector<d
             mtfData[i] = roiMTFVec;
             Py_DECREF(roiMTFData);
         }
+        print(mtfData.size());
+        Py_DECREF(errorRet);
+        Py_DECREF(dataRet);
     } else if (PyList_Check(pRet)) {
         // list的情况
         print("return is List");
@@ -224,10 +218,6 @@ QVector<int> callPythonReturnMTFData(const std::vector<std::vector<std::vector<d
         // 数字的情况
         print("return is Number");
     }
-
-    Py_DECREF(errorRet);
-    Py_DECREF(dataRet);
     Py_DECREF(pRet);
-    print("------------------debug-----------------");
     return errRoiId;
 }

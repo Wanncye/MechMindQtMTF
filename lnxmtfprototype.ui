@@ -165,12 +165,12 @@
           <item>
            <widget class="QLabel" name="label">
             <property name="text">
-             <string>Pixel Size</string>
+             <string>Pixel Size (mm)</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QDoubleSpinBox" name="doubleSpinBox"/>
+           <widget class="QDoubleSpinBox" name="pixelSize"/>
           </item>
          </layout>
         </item>

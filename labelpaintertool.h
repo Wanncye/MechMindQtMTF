@@ -22,7 +22,6 @@ enum operateMode { choose = 0, edit = 1 };
 struct roiRect
 {
     double offset = 0;                       // 8
-    bool checked = 0;                        // 4
     direction d = static_cast<direction>(0); // 4
     QImage img;
     QRectF rect;
@@ -59,7 +58,6 @@ signals:
 
 private:
     std::vector<roiRect> mFieldRects; // 十三个视场矩形
-    QVector<QRectF> mManualRects;     // 手动选择的视场
     myRectProcessor* mRectProcessor;
     QImage mImage;
 
@@ -68,6 +66,7 @@ private:
     operateMode mOpMode = choose;
     QPointF mMouseStartPoint;
     QPointF mMouseEndPoint;
+    int mSelectedROIRectIndex; // 用于拖动ROI
 
     // scrollArea改变大小用
     QScrollArea* mScrollArea;

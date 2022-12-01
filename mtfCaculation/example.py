@@ -192,23 +192,16 @@ def test_main(imgTuple: tuple, positions: tuple, fileNameTuple: tuple, pixelSize
                 print("exist deg_err or mtf_err or over_exp_err or edge_estim_err!")
                 errRoiId.append(i)
                 find_err = 1
-            isSaveFlag = int(position[6])
-            if not isSaveFlag:
-               continue #错误暂时不保存 该算法模块需添加一个是否需要保存数据的参数 来应对错误数据的是否保存
+#            isSaveFlag = int(position[6])
+#            if not isSaveFlag:
+#               continue #错误暂时不保存 该算法模块需添加一个是否需要保存数据的参数 来应对错误数据的是否保存
             tmpData = [res.mtfAtNyquist, position[0], position[1], position[2], position[3], over_exp_err, edge_estim_err, mtf_err, deg_err, position[4], dire]
             tmpData.extend(res.y)
+            print(len(tmpData))
             data.append(tmpData)
-
-#        isSaved =  writeToExcelFile(saveFileName, data, imgName=imgName)
-#        if not isSaved:
-#            print('Cannot save!', flush = True)
-#        else:
-#            print("save sucessfully!", flush = True)
-
+        print(len(data))
         return errRoiId, data
 #        return errRoiId
-
-
 
     except Exception as e:
         print("error!!!!!!!!! in test_main", flush = True)
