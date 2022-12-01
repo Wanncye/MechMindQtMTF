@@ -31,6 +31,7 @@ private:
     bool calcMTF(const std::vector<roiRect>& roiRects, const QString& imgPath, bool isSave);
     void showTable();
     void showChart();
+    std::vector<roiRect> getSpecificFieldRect(double offset);
 
     Ui::LNXMTFPrototype* ui;
     std::vector<roiRect> mFieldRects;

@@ -11,6 +11,8 @@
 
 #define print(val) qDebug() << #val << val
 
+constexpr double maxYAxies = 1.1;
+
 inline void warnMoveROI()
 {
     QMessageBox::warning(nullptr, LNXMTFPrototype::tr("Calcuate Failure"),
@@ -34,10 +36,6 @@ LNXMTFPrototype::LNXMTFPrototype(QWidget* parent) : QWidget(parent), ui(new Ui::
     ui->NW01->setChecked(true);
     ui->NW02->setChecked(true);
     ui->NW05->setChecked(true);
-    ui->feild01->setRangeY(0, 1.3);
-    ui->feild02->setRangeY(0, 1.3);
-    ui->feild05->setRangeY(0, 1.3);
-    ui->feild09->setRangeY(0, 1.3);
     ui->feild01->setAxisTitle("x", "MTF");
     ui->feild02->setAxisTitle("x", "MTF");
     ui->feild05->setAxisTitle("x", "MTF");
@@ -235,25 +233,42 @@ void LNXMTFPrototype::showTable()
 void LNXMTFPrototype::showChart()
 {
     // 设置图
-    ui->feild01->resetChartSeries(genSeriesNames(mFieldRects));
-    ui->feild02->resetChartSeries(genSeriesNames(mFieldRects));
-    ui->feild05->resetChartSeries(genSeriesNames(mFieldRects));
-    ui->feild09->resetChartSeries(genSeriesNames(mFieldRects));
+    print("begin resetChartSeries");
+    ui->feild01->resetChartSeries(genSeriesNames(getSpecificFieldRect(0.1)));
+    ui->feild02->resetChartSeries(genSeriesNames(getSpecificFieldRect(0.2)));
+    ui->feild05->resetChartSeries(genSeriesNames(getSpecificFieldRect(0.5)));
+    ui->feild09->resetChartSeries(genSeriesNames(getSpecificFieldRect(0.9)));
     for (int i = 0; i < mMtfData.size(); ++i) {
         if (mFieldRects[i].offset == 0.1) {
             print(ui->feild01->setValues(genSeriesName(mFieldRects[i]), mMtfData[i]));
+            ui->feild01->setRangeY(0, maxYAxies);
             ui->feild01->scaleAxisX();
         } else if (mFieldRects[i].offset == 0.2) {
             print(ui->feild02->setValues(genSeriesName(mFieldRects[i]), mMtfData[i]));
+            ui->feild02->setRangeY(0, maxYAxies);
             ui->feild02->scaleAxisX();
         } else if (mFieldRects[i].offset == 0.5) {
             print(ui->feild05->setValues(genSeriesName(mFieldRects[i]), mMtfData[i]));
+            ui->feild05->setRangeY(0, maxYAxies);
             ui->feild05->scaleAxisX();
         } else if (mFieldRects[i].offset == 0.9) {
             print(ui->feild09->setValues(genSeriesName(mFieldRects[i]), mMtfData[i]));
+            ui->feild09->setRangeY(0, maxYAxies);
             ui->feild09->scaleAxisX();
         }
     }
+}
+
+// 感觉这个可以写成STL的算法
+std::vector<roiRect> LNXMTFPrototype::getSpecificFieldRect(double offset)
+{
+    std::vector<roiRect> dst;
+    for (auto& rect : mFieldRects) {
+        if (rect.offset == offset)
+            dst.push_back(rect);
+    }
+    print("getSpecificFieldRect done");
+    return dst;
 }
 
 void LNXMTFPrototype::on_calcMTF_clicked()

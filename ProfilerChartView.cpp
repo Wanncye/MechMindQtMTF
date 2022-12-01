@@ -84,6 +84,11 @@ void ProfilerChartView::resetChartSeries(const QColor& color)
 
 void ProfilerChartView::resetChartSeries(const QStringList& names)
 {
+    if (names.isEmpty()) {
+        qDebug() << "name is empty";
+        resetChartSeries();
+        return;
+    }
     const auto& colors = genMultiColors(names.size());
     resetChartSeries(names, colors);
 }
@@ -106,7 +111,7 @@ void ProfilerChartView::resetChartSeries(const QStringList& names,
         _seriesMap.emplace(seriesName, series);
     }
     _chart->createDefaultAxes();
-    _chart->legend()->setVisible(names.size() > 1);
+    //    _chart->legend()->setVisible(names.size() > 1);
     setTickCountX(kDefaultTickCount);
     setTickCountY(kDefaultTickCount);
 }
