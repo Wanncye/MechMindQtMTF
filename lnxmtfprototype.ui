@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>882</width>
-    <height>758</height>
+    <height>770</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -84,8 +84,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>309</width>
-             <height>608</height>
+             <width>251</width>
+             <height>620</height>
             </rect>
            </property>
            <property name="layoutDirection">
@@ -119,14 +119,14 @@
     </layout>
    </item>
    <item>
-    <layout class="QVBoxLayout" name="operatorPart" stretch="1,3,1,1">
+    <layout class="QVBoxLayout" name="operatorPart" stretch="1,4,2,1">
      <property name="sizeConstraint">
       <enum>QLayout::SetMaximumSize</enum>
      </property>
      <item>
       <widget class="QGroupBox" name="groupBox_3">
        <property name="title">
-        <string>Set Width And Height</string>
+        <string>Set Parameters</string>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_4">
         <item>
@@ -171,6 +171,26 @@
           </item>
           <item>
            <widget class="QDoubleSpinBox" name="pixelSize"/>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_8">
+            <property name="text">
+             <string>Frequency</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="frequency"/>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_9">
+            <property name="text">
+             <string>Criteria</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QDoubleSpinBox" name="criteria"/>
           </item>
          </layout>
         </item>
@@ -376,11 +396,35 @@
      <item>
       <widget class="QGroupBox" name="groupBox">
        <property name="title">
-        <string>ROI Calculate Error Table</string>
+        <string>ROI Calculate Result Table</string>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_6">
         <item>
-         <widget class="QTableWidget" name="tableWidget"/>
+         <widget class="QTableWidget" name="errorTable">
+          <property name="lineWidth">
+           <number>1</number>
+          </property>
+          <row>
+           <property name="text">
+            <string>MTF Value</string>
+           </property>
+          </row>
+          <row>
+           <property name="text">
+            <string>Gray Error</string>
+           </property>
+          </row>
+          <row>
+           <property name="text">
+            <string>Edge Error</string>
+           </property>
+          </row>
+          <row>
+           <property name="text">
+            <string>MTF Error</string>
+           </property>
+          </row>
+         </widget>
         </item>
        </layout>
       </widget>

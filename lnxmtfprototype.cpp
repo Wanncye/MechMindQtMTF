@@ -23,6 +23,8 @@ LNXMTFPrototype::LNXMTFPrototype(QWidget* parent) : QWidget(parent), ui(new Ui::
     ui->roiWidth->setValue(50);
     ui->roiHeight->setValue(80);
     ui->pixelSize->setValue(5.0);
+    ui->frequency->setValue(55);
+    ui->criteria->setValue(0.35);
     setWindowState(Qt::WindowMaximized);
     ui->zoomIn->setEnabled(false);
     ui->zoomOut->setEnabled(false);
@@ -32,15 +34,14 @@ LNXMTFPrototype::LNXMTFPrototype(QWidget* parent) : QWidget(parent), ui(new Ui::
     ui->NW01->setChecked(true);
     ui->NW02->setChecked(true);
     ui->NW05->setChecked(true);
-    ui->NW09->setChecked(true);
-    ui->feild01->setRangeY(-0.1, 1.1);
-    ui->feild02->setRangeY(-0.1, 1.1);
-    ui->feild05->setRangeY(-0.1, 1.1);
-    ui->feild09->setRangeY(-0.1, 1.1);
-    ui->feild01->resetChartSeries({"NE", "NW", "SW", "SE"});
-    ui->feild02->resetChartSeries({"NE", "NW", "SW", "SE"});
-    ui->feild05->resetChartSeries({"NE", "NW", "SW", "SE"});
-    ui->feild09->resetChartSeries({"NE", "NW", "SW", "SE"});
+    ui->feild01->setRangeY(0, 1.3);
+    ui->feild02->setRangeY(0, 1.3);
+    ui->feild05->setRangeY(0, 1.3);
+    ui->feild09->setRangeY(0, 1.3);
+    ui->feild01->setAxisTitle("x", "MTF");
+    ui->feild02->setAxisTitle("x", "MTF");
+    ui->feild05->setAxisTitle("x", "MTF");
+    ui->feild09->setAxisTitle("x", "MTF");
     ui->feild01->setChartTitle("Field 0.1");
     ui->feild02->setChartTitle("Field 0.2");
     ui->feild05->setChartTitle("Field 0.5");
@@ -87,6 +88,7 @@ void LNXMTFPrototype::on_loadImg_clicked()
          false, false, ui->SE09->isChecked()}};
     mFieldRects = ui->imgView->getRectProcessor()->getRoIRects(
         img, roiBool, img.width(), img.height(), ui->roiWidth->value(), ui->roiHeight->value());
+    print(mFieldRects.size());
 
     ui->imgView->addFieldRectangle(mFieldRects);
 
@@ -96,10 +98,11 @@ void LNXMTFPrototype::on_loadImg_clicked()
     ui->editRoi->setEnabled(true);
 }
 
-QString genSeriesNames(const roiRect& rects)
+QString genSeriesName(const roiRect& rect)
 {
+    QString dst;
     QString direction;
-    switch (rects.d) {
+    switch (rect.d) {
     case ne:
         direction = "NE";
         break;
@@ -116,7 +119,17 @@ QString genSeriesNames(const roiRect& rects)
         direction = "NULL";
         break;
     }
-    return direction;
+    QString offset = QString::number(rect.offset);
+    dst.push_back(QStringLiteral("%1%2").arg(direction, offset));
+    return dst;
+}
+
+QStringList genSeriesNames(const std::vector<roiRect>& rects)
+{
+    QStringList dst;
+    for (auto& rect : rects)
+        dst.push_back(genSeriesName(rect));
+    return dst;
 }
 
 std::vector<std::vector<double>> QimageToArrayLNX(const QImage& image)
@@ -158,8 +171,89 @@ bool LNXMTFPrototype::calcMTF(const std::vector<roiRect>& roiRects, const QStrin
     print(imgPath.mid(imgPath.lastIndexOf(QLatin1String("/")) + 1));
     const std::string savefileName = "result.xlsx";
     QVector<int> errRoiId(callPythonReturnMTFData(img, information, imgFileName, savefileName,
-                                                  ui->pixelSize->value(), mtfData));
+                                                  ui->pixelSize->value(), mMtfData,
+                                                  mMtfControlInformation));
     return errRoiId.isEmpty();
+}
+
+void LNXMTFPrototype::showTable()
+{
+    // 设置表格
+    QTableWidgetItem* headerItem;
+    auto headerText = genSeriesNames(mFieldRects);
+    ui->errorTable->setColumnCount(headerText.count());
+    for (int i = 0; i < ui->errorTable->columnCount(); i++) {
+        headerItem = new QTableWidgetItem(headerText.at(i));
+        // 可以设置表头的格式
+        ui->errorTable->setHorizontalHeaderItem(i, headerItem);
+    }
+    ui->errorTable->clearContents();
+    // 这一块赋值的地方可以缩减一下
+    std::vector<double> freqMTF(mMtfData.size(), 0);
+    std::vector<double> grayError(mMtfControlInformation.size(), 0);
+    std::vector<double> edgeErro(mMtfControlInformation.size(), 0);
+    std::vector<double> mtfError(mMtfControlInformation.size(), 0);
+    for (int i = 0; i < mMtfData.size(); i++) {
+        freqMTF[i] = mMtfData[i][55];
+    }
+    for (int i = 0; i < mMtfControlInformation.size(); i++) {
+        grayError[i] = mMtfControlInformation[i][5];
+        edgeErro[i] = mMtfControlInformation[i][6];
+        mtfError[i] = mMtfControlInformation[i][7];
+    }
+    QTableWidgetItem* item;
+    for (int col = 0; col < ui->errorTable->columnCount(); col++) {
+        item = new QTableWidgetItem(QString::number(freqMTF.at(col)));
+        item->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+        if (grayError[col] == 1. || edgeErro[col] == 1. || mtfError[col] == 1.) {
+            // 黑色背景，白字，有错误
+            item->setBackground(QBrush(Qt::black));
+            item->setTextColor(Qt::white);
+        } else if (freqMTF.at(col) > ui->criteria->value()) {
+            // 绿色背景，高于标准
+            item->setBackground(QBrush(Qt::green));
+        } else {
+            // 红色背景，低于标准
+            item->setBackground(QBrush(Qt::red));
+        }
+        ui->errorTable->setItem(0, col, item);
+
+        item = new QTableWidgetItem(QString::number(grayError.at(col)));
+        item->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+        ui->errorTable->setItem(1, col, new QTableWidgetItem(QString::number(grayError.at(col))));
+
+        item = new QTableWidgetItem(QString::number(edgeErro.at(col)));
+        item->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+        ui->errorTable->setItem(2, col, new QTableWidgetItem(QString::number(edgeErro.at(col))));
+
+        item = new QTableWidgetItem(QString::number(mtfError.at(col)));
+        item->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+        ui->errorTable->setItem(3, col, new QTableWidgetItem(QString::number(mtfError.at(col))));
+    }
+}
+
+void LNXMTFPrototype::showChart()
+{
+    // 设置图
+    ui->feild01->resetChartSeries(genSeriesNames(mFieldRects));
+    ui->feild02->resetChartSeries(genSeriesNames(mFieldRects));
+    ui->feild05->resetChartSeries(genSeriesNames(mFieldRects));
+    ui->feild09->resetChartSeries(genSeriesNames(mFieldRects));
+    for (int i = 0; i < mMtfData.size(); ++i) {
+        if (mFieldRects[i].offset == 0.1) {
+            print(ui->feild01->setValues(genSeriesName(mFieldRects[i]), mMtfData[i]));
+            ui->feild01->scaleAxisX();
+        } else if (mFieldRects[i].offset == 0.2) {
+            print(ui->feild02->setValues(genSeriesName(mFieldRects[i]), mMtfData[i]));
+            ui->feild02->scaleAxisX();
+        } else if (mFieldRects[i].offset == 0.5) {
+            print(ui->feild05->setValues(genSeriesName(mFieldRects[i]), mMtfData[i]));
+            ui->feild05->scaleAxisX();
+        } else if (mFieldRects[i].offset == 0.9) {
+            print(ui->feild09->setValues(genSeriesName(mFieldRects[i]), mMtfData[i]));
+            ui->feild09->scaleAxisX();
+        }
+    }
 }
 
 void LNXMTFPrototype::on_calcMTF_clicked()
@@ -175,30 +269,12 @@ void LNXMTFPrototype::on_calcMTF_clicked()
     // 这个事要拿另外的线程来做，要不然会阻塞IO
     calcMTF(mFieldRects, "D:/验收软件支持/沙姆MTF/03.bmp", false);
 
-    if (mtfData.empty()) {
+    if (mMtfData.empty()) {
         warnMoveROI();
         return;
     }
-
-    //    drawChart();
-
-    ui->feild01->setAxisTitle("x", "MTF");
-    for (int i = 0; i < mtfData.size(); ++i) {
-        if (mFieldRects[i].offset == 0.1) {
-            print(ui->feild01->setValues(genSeriesNames(mFieldRects[i]), mtfData[i]));
-            ui->feild01->scaleAxisX();
-        } else if (mFieldRects[i].offset == 0.2) {
-            print(ui->feild02->setValues(genSeriesNames(mFieldRects[i]), mtfData[i]));
-            ui->feild02->scaleAxisX();
-        } else if (mFieldRects[i].offset == 0.5) {
-            print(ui->feild05->setValues(genSeriesNames(mFieldRects[i]), mtfData[i]));
-            ui->feild05->scaleAxisX();
-        } else if (mFieldRects[i].offset == 0.9) {
-            print(ui->feild09->setValues(genSeriesNames(mFieldRects[i]), mtfData[i]));
-            ui->feild09->scaleAxisX();
-        }
-    }
-    //    }
+    showChart();
+    showTable();
 }
 
 void LNXMTFPrototype::on_zoomIn_clicked() { ui->imgView->onZoomInImage(); }

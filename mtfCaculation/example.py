@@ -175,7 +175,7 @@ def test_main(imgTuple: tuple, positions: tuple, fileNameTuple: tuple, pixelSize
                 raise ValueError('Positions Error!')
             for row in range(len(imgTuple[i])):
                 for column in range(len(imgTuple[i][row])):
-                    if imgTuple[i][row][column] >= 255 or imgTuple[i][row][column] < 0:
+                    if imgTuple[i][row][column] >= 250 or imgTuple[i][row][column] < 0:
                         over_exp_err = 1 #过曝错误
             if res.mtfAtNyquist<2 or res.mtfAtNyquist>10:
                 deg_err = 1 #刃边角度错误
@@ -195,7 +195,7 @@ def test_main(imgTuple: tuple, positions: tuple, fileNameTuple: tuple, pixelSize
 #            isSaveFlag = int(position[6])
 #            if not isSaveFlag:
 #               continue #错误暂时不保存 该算法模块需添加一个是否需要保存数据的参数 来应对错误数据的是否保存
-            tmpData = [res.mtfAtNyquist, position[0], position[1], position[2], position[3], over_exp_err, edge_estim_err, mtf_err, deg_err, position[4], dire]
+            tmpData = [res.mtfAtNyquist, position[0], position[1], position[2], position[3], over_exp_err, edge_estim_err, mtf_err, deg_err, position[4], position[5]]
             tmpData.extend(res.y)
             print(len(tmpData))
             data.append(tmpData)

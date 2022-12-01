@@ -113,7 +113,8 @@ QVector<int> callPythonReturnMTFData(const std::vector<std::vector<std::vector<d
                                      const std::vector<std::vector<double>>& information,
                                      const std::string& saveFileName,
                                      const std::string& imgFileName, const double& pixelSize,
-                                     std::vector<std::vector<double>>& mtfData)
+                                     std::vector<std::vector<double>>& mtfData,
+                                     std::vector<std::vector<double>>& mtfControlData)
 {
     class PyThreadStateLock PyThreadLock;
     print("callPythonReturnMTFData");
@@ -196,13 +197,23 @@ QVector<int> callPythonReturnMTFData(const std::vector<std::vector<std::vector<d
         int roiNum = PyList_Size(dataRet);
         print(roiNum);
         mtfData.resize(roiNum);
+        mtfControlData.resize(roiNum);
         for (int i = 0; i < roiNum; ++i) {
             PyObject* roiMTFData = PyList_GetItem(dataRet, i);
             int roiMTFLen = PyList_Size(roiMTFData);
-            std::vector<double> roiMTFVec(roiMTFLen - 11, 0.);
-            for (int j = 11; j < roiMTFLen; ++j) {
+            int controlInformationLen = 11;
+            std::vector<double> controlVec(controlInformationLen, 0.);
+            for (int j = 0; j < controlInformationLen; ++j) {
                 PyObject* listElement = PyList_GetItem(roiMTFData, j);
-                roiMTFVec[j - 11] = PyFloat_AsDouble(listElement);
+                controlVec[j] = PyFloat_AsDouble(listElement);
+                Py_DECREF(listElement);
+            }
+            mtfControlData[i] = controlVec;
+            print(mtfControlData.size());
+            std::vector<double> roiMTFVec(roiMTFLen - controlInformationLen, 0.);
+            for (int j = controlInformationLen; j < roiMTFLen; ++j) {
+                PyObject* listElement = PyList_GetItem(roiMTFData, j);
+                roiMTFVec[j - controlInformationLen] = PyFloat_AsDouble(listElement);
                 Py_DECREF(listElement);
             }
             mtfData[i] = roiMTFVec;
