@@ -149,9 +149,14 @@ QVector<int> callPythonReturnMTFData(const std::vector<std::vector<std::vector<d
             for (Py_ssize_t k = 0; k < colLen; k++) {
                 PyTuple_SET_ITEM(item, k, PyFloat_FromDouble(img[i][j][k]));
             }
+            print("before rowItem PyTuple_SET_ITEM");
+            print(j);
             PyTuple_SET_ITEM(rowItem, j, item);
+            print("after rowItem PyTuple_SET_ITEM");
         }
+        print("before imgArray PyTuple_SET_ITEM");
         PyTuple_SET_ITEM(imgArray, i, rowItem);
+        print("after imgArray PyTuple_SET_ITEM");
     }
     print("--------debug-----------");
     Py_ssize_t rowLen = information.size();
@@ -180,8 +185,8 @@ QVector<int> callPythonReturnMTFData(const std::vector<std::vector<std::vector<d
     Py_DECREF(pModule);
 
     QVector<int> errRoiId;
+    PyObject *errorRet = nullptr, *dataRet = nullptr;
     if (PyTuple_Check(pRet)) {
-        PyObject *errorRet = nullptr, *dataRet = nullptr;
         print("return is tuple");
         errorRet = PyTuple_GetItem(pRet, 0);
         int sizeOfList = PyList_Size(errorRet);
@@ -219,8 +224,6 @@ QVector<int> callPythonReturnMTFData(const std::vector<std::vector<std::vector<d
             Py_DECREF(roiMTFData);
         }
         print(mtfData.size());
-        Py_DECREF(errorRet);
-        Py_DECREF(dataRet);
     } else if (PyList_Check(pRet)) {
         // list的情况
         print("return is List");
@@ -229,6 +232,9 @@ QVector<int> callPythonReturnMTFData(const std::vector<std::vector<std::vector<d
         print("return is Number");
     }
     Py_DECREF(pRet);
+    Py_DECREF(errorRet);
+    Py_DECREF(dataRet);
+    Py_DECREF(imgArray);
     print("---------------------return callPythonReturnMTFData-------------------");
     return errRoiId;
 }
