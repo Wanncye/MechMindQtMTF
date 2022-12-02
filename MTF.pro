@@ -24,6 +24,7 @@ SOURCES += \
     danleimtfcalc.cpp \
     labelpaintertool.cpp \
     lnxmtfprototype.cpp \
+    mDump.cpp \
     main.cpp \
     mainwindow.cpp \
     mtfCaculation/callPythonScripts.cpp \
@@ -36,6 +37,7 @@ HEADERS += \
     danleimtfcalc.h \
     labelpaintertool.h \
     lnxmtfprototype.h \
+    mDump.h \
     mainwindow.h \
     mtfcalc.h \
     ROISelectionWindow.h\

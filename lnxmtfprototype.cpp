@@ -11,6 +11,8 @@
 
 #define print(val) qDebug() << #val << val
 
+#pragma comment(linker, "/STACK:1048576")
+
 constexpr double maxYAxies = 1.1;
 
 inline void warnMoveROI()
@@ -270,25 +272,26 @@ std::vector<roiRect> LNXMTFPrototype::getSpecificFieldRect(double offset)
 
 void LNXMTFPrototype::on_calcMTF_clicked()
 {
-    while (1) {
-        PythonInit();
-        print("click calcMTF");
-        if (mFieldRects.empty()) {
-            qDebug() << "mFieldRects NULL";
-            return;
-        }
-
-        // 模拟一下MTF数据， 将他显示出来
-        // 这个事要拿另外的线程来做，要不然会阻塞IO
-        calcMTF(mFieldRects, "D:/验收软件支持/沙姆MTF/03.bmp", false);
-
-        if (mMtfData.empty()) {
-            warnMoveROI();
-            return;
-        }
-        showChart();
-        showTable();
+    //    while (1) {
+    print("click calcMTF");
+    print(QThread::currentThreadId());
+    print(QThread::currentThread());
+    if (mFieldRects.empty()) {
+        qDebug() << "mFieldRects NULL";
+        return;
     }
+
+    // 模拟一下MTF数据， 将他显示出来
+    // 这个事要拿另外的线程来做，要不然会阻塞IO
+    calcMTF(mFieldRects, "D:/验收软件支持/沙姆MTF/03.bmp", false);
+
+    if (mMtfData.empty()) {
+        warnMoveROI();
+        return;
+    }
+    showChart();
+    showTable();
+    //    }
 }
 
 void LNXMTFPrototype::on_zoomIn_clicked() { ui->imgView->onZoomInImage(); }

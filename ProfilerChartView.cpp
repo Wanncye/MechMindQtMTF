@@ -108,7 +108,7 @@ void ProfilerChartView::resetChartSeries(const QStringList& names,
         _seriesMap.emplace(seriesName, series);
     }
     _chart->createDefaultAxes();
-    //    _chart->legend()->setVisible(names.size() > 1);
+    _chart->legend()->setVisible(names.size() > 1);
     setTickCountX(kDefaultTickCount);
     setTickCountY(kDefaultTickCount);
 }

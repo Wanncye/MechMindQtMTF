@@ -149,14 +149,9 @@ QVector<int> callPythonReturnMTFData(const std::vector<std::vector<std::vector<d
             for (Py_ssize_t k = 0; k < colLen; k++) {
                 PyTuple_SET_ITEM(item, k, PyFloat_FromDouble(img[i][j][k]));
             }
-            print("before rowItem PyTuple_SET_ITEM");
-            print(j);
             PyTuple_SET_ITEM(rowItem, j, item);
-            print("after rowItem PyTuple_SET_ITEM");
         }
-        print("before imgArray PyTuple_SET_ITEM");
         PyTuple_SET_ITEM(imgArray, i, rowItem);
-        print("after imgArray PyTuple_SET_ITEM");
     }
     print("--------debug-----------");
     Py_ssize_t rowLen = information.size();
@@ -213,7 +208,6 @@ QVector<int> callPythonReturnMTFData(const std::vector<std::vector<std::vector<d
                 Py_DECREF(listElement);
             }
             mtfControlData[i] = controlVec;
-            print(mtfControlData.size());
             std::vector<double> roiMTFVec(roiMTFLen - controlInformationLen, 0.);
             for (int j = controlInformationLen; j < roiMTFLen; ++j) {
                 PyObject* listElement = PyList_GetItem(roiMTFData, j);
@@ -234,7 +228,39 @@ QVector<int> callPythonReturnMTFData(const std::vector<std::vector<std::vector<d
     Py_DECREF(pRet);
     Py_DECREF(errorRet);
     Py_DECREF(dataRet);
-    Py_DECREF(imgArray);
     print("---------------------return callPythonReturnMTFData-------------------");
     return errRoiId;
+}
+
+QVector<int> PythonTest(const std::vector<std::vector<std::vector<double>>>& img,
+                        const std::vector<std::vector<double>>& information,
+                        const std::string& saveFileName, const std::string& imgFileName,
+                        const double& pixelSize, std::vector<std::vector<double>>& mtfData,
+                        std::vector<std::vector<double>>& mtfControlData)
+{
+    class PyThreadStateLock PyThreadLock;
+    print("callPythonReturnMTFData");
+    Py_SetPythonHome(L"C:/Users/mech-mind/anaconda3/envs/qt"); // Windows
+    Py_Initialize();
+
+    PyRun_SimpleString("import sys");
+    PyRun_SimpleString("sys.path.append('D:/MechMindQtMTF/mtfCaculation')"); // Windows
+
+    PyObject* pModule = PyImport_ImportModule("example");
+    if (pModule == nullptr) {
+        qDebug() << "Module example not found";
+        // return false;
+    }
+
+    PyObject* pFunc = PyObject_GetAttrString(pModule, "myFun");
+    if (pFunc == nullptr) {
+        qDebug() << "Module test_main not found";
+        // return false;
+    }
+
+    PyObject* pRet = PyObject_CallObject(pFunc, nullptr);
+
+    Py_DECREF(pRet);
+    print("---------------------return callPythonReturnMTFData-------------------");
+    return {};
 }

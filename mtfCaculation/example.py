@@ -58,6 +58,8 @@ def writeToExcelFile(fileName: str, data: tuple, imgName: str='') -> bool:
         print(e)
         return False
 
+def myFun():
+    print("in python myFun", flush = True)
 
 def main(imgTuple: tuple, positions: tuple, fileNameTuple: tuple, pixelSize: float) -> int:
     '''
