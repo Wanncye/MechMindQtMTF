@@ -7,6 +7,8 @@ LabelPainterTool::~LabelPainterTool() {}
 
 #define print(val) qDebug() << #val << val
 
+QString genSeriesName(const roiRect& rect);
+
 void LabelPainterTool::paintEvent(QPaintEvent* event)
 {
     QPainter painter(this);
@@ -36,6 +38,7 @@ void LabelPainterTool::paintEvent(QPaintEvent* event)
     painter.setPen(QPen(Qt::red, 4));
     for (const auto& roi : mFieldRects) {
         painter.drawRect(roi.rect);
+        painter.drawText(roi.rect, Qt::AlignCenter, genSeriesName(roi));
     }
 
     // 中心点

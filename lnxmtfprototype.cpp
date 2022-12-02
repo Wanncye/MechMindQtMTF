@@ -12,8 +12,6 @@
 
 #define print(val) qDebug() << #val << val
 
-#pragma comment(linker, "/STACK:1048576")
-
 constexpr double maxYAxies = 1.1;
 constexpr double minYAxies = -0.1;
 
