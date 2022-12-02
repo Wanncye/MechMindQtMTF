@@ -1,5 +1,6 @@
 #include "lnxmtfprototype.h"
 #include "labelpaintertool.h"
+#include "singleMTFCurve.h".h "
 #include "ui_lnxmtfprototype.h"
 #include "mtfCaculation/callPythonScripts.h"
 
@@ -14,6 +15,7 @@
 #pragma comment(linker, "/STACK:1048576")
 
 constexpr double maxYAxies = 1.1;
+constexpr double minYAxies = -0.1;
 
 inline void warnMoveROI()
 {
@@ -35,6 +37,8 @@ LNXMTFPrototype::LNXMTFPrototype(QWidget* parent) : QWidget(parent), ui(new Ui::
     ui->editRoi->setEnabled(false);
     connect(ui->imgView, &LabelPainterTool::sendFieldRects, this,
             &LNXMTFPrototype::recieveFieldRects);
+    connect(ui->errorTable->horizontalHeader(), &QHeaderView::sectionDoubleClicked, this,
+            &LNXMTFPrototype::showSingleMTFCurve);
     ui->NW01->setChecked(true);
     ui->NW02->setChecked(true);
     ui->NW05->setChecked(true);
@@ -174,7 +178,19 @@ bool LNXMTFPrototype::calcMTF(const std::vector<roiRect>& roiRects, const QStrin
                                                   mMtfControlInformation));
     return errRoiId.isEmpty();
 }
+void LNXMTFPrototype::showSingleMTFCurve(int index)
+{
+    print(index);
+    print(ui->errorTable->horizontalHeaderItem(index)->text());
+    const auto singleMTFData = mMtfData[index];
+    const auto singleRect = mFieldRects[index];
+    const auto singleMTFControlInformation = mMtfControlInformation[index];
 
+    auto singleMTFCurveWindows =
+        new singleMTFCurve(ui->errorTable->horizontalHeaderItem(index)->text(), singleRect,
+                           singleMTFData, singleMTFControlInformation, ui->frequency->value());
+    singleMTFCurveWindows->show();
+}
 void LNXMTFPrototype::showTable()
 {
     // 设置表格
@@ -193,7 +209,7 @@ void LNXMTFPrototype::showTable()
     std::vector<double> edgeErro(mMtfControlInformation.size(), 0);
     std::vector<double> mtfError(mMtfControlInformation.size(), 0);
     for (int i = 0; i < mMtfData.size(); i++) {
-        freqMTF[i] = mMtfData[i][55];
+        freqMTF[i] = mMtfData[i][ui->frequency->value()];
     }
     for (int i = 0; i < mMtfControlInformation.size(); i++) {
         grayError[i] = mMtfControlInformation[i][5];
@@ -219,15 +235,15 @@ void LNXMTFPrototype::showTable()
 
         item = new QTableWidgetItem(QString::number(grayError.at(col)));
         item->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
-        ui->errorTable->setItem(1, col, new QTableWidgetItem(QString::number(grayError.at(col))));
+        ui->errorTable->setItem(1, col, item);
 
         item = new QTableWidgetItem(QString::number(edgeErro.at(col)));
         item->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
-        ui->errorTable->setItem(2, col, new QTableWidgetItem(QString::number(edgeErro.at(col))));
+        ui->errorTable->setItem(2, col, item);
 
         item = new QTableWidgetItem(QString::number(mtfError.at(col)));
         item->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
-        ui->errorTable->setItem(3, col, new QTableWidgetItem(QString::number(mtfError.at(col))));
+        ui->errorTable->setItem(3, col, item);
     }
 }
 

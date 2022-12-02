@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>882</width>
+    <width>1095</width>
     <height>770</height>
    </rect>
   </property>
@@ -442,14 +442,14 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>LabelPainterTool</class>
-   <extends>QLabel</extends>
-   <header>labelpaintertool.h</header>
-  </customwidget>
-  <customwidget>
    <class>MTFProfilerLineChart</class>
    <extends>QGraphicsView</extends>
    <header>ProfilerChartView.h</header>
+  </customwidget>
+  <customwidget>
+   <class>LabelPainterTool</class>
+   <extends>QLabel</extends>
+   <header>labelpaintertool.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

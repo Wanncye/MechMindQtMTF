@@ -29,7 +29,8 @@ SOURCES += \
     mainwindow.cpp \
     mtfCaculation/callPythonScripts.cpp \
     mtfcalc.cpp \
-    ROISelectionWindow.cpp
+    ROISelectionWindow.cpp \
+    singleMTFCurve.cpp
 
 HEADERS += \
     ProfilerChartView.h \
@@ -42,7 +43,8 @@ HEADERS += \
     mtfcalc.h \
     ROISelectionWindow.h\
     mtfCaculation/PyThreadStateLock.h \
-    mtfCaculation/callPythonScripts.h
+    mtfCaculation/callPythonScripts.h \
+    singleMTFCurve.h
 
 FORMS += \
     danleimtfcalc.ui \
@@ -50,7 +52,8 @@ FORMS += \
     ROISelectionWindow.ui \
     lnxmtfprototype.ui \
     mainwindow.ui \
-    mtfcalc.ui
+    mtfcalc.ui \
+    singleMTFCurve.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

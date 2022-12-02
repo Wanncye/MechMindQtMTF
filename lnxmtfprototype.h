@@ -2,6 +2,7 @@
 #define LNXMTFPROTOTYPE_H
 
 #include <QWidget>
+#include <QTableWidgetItem>
 
 namespace Ui {
 class LNXMTFPrototype;
@@ -25,6 +26,7 @@ public slots:
     void on_editRoi_clicked(bool checked);
 
     void recieveFieldRects(std::vector<roiRect>& rects);
+    void showSingleMTFCurve(int index);
 
 private:
     void clear();
