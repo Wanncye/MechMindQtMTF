@@ -35,7 +35,7 @@ void LabelPainterTool::paintEvent(QPaintEvent* event)
     setPixmap(QPixmap::fromImage(mImage));
 
     // 视场绘制
-    painter.setPen(QPen(Qt::red, 4));
+    painter.setPen(QPen(Qt::red, 1));
     for (const auto& roi : mFieldRects) {
         painter.drawRect(roi.rect);
         painter.drawText(roi.rect, Qt::AlignCenter, genSeriesName(roi));

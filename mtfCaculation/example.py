@@ -61,15 +61,11 @@ def writeToExcelFile(fileName: str, data: tuple, imgName: str='') -> bool:
 def myFun():
     print("in python myFun", flush = True)
 
-def test_main(imgTuple: tuple, positions: tuple, fileNameTuple: tuple, pixelSize: float):
-#    stdout = open("mtflog.txt", "w")
+def test_main(imgTuple: tuple, positions: tuple, pixelSize: float):
     print("start test_main", flush = True)
     try:
         imgLen = len(imgTuple)
-        print("imgLen", imgLen)
         cnt = imgLen
-        saveFileName = str(fileNameTuple[0], 'gbk')
-        imgName = str(fileNameTuple[1], 'gbk')
         pixel_width = pixelSize[0]
 
         data = list()
@@ -78,22 +74,28 @@ def test_main(imgTuple: tuple, positions: tuple, fileNameTuple: tuple, pixelSize
             over_exp_err = 0 #过曝
             edge_estim_err = 0  #刃边估计错误
             mtf_err = 0        #mtf计算值不在0-1范围内
-            deg_err = 0       #刃边角度不对，此算法要求应在2到10度
-            find_err = 0
+            deg_err = 0       #刃边角度不对，此算法要求应在3到11度
             imgArr = np.asarray(imgTuple[i],dtype=np.double) / 255
             imgArr = mtf.Helper.CorrectImageOrientation(imgArr) #保证图片暗面朝上 与原模块处理一样
             res = mtf.MTF.CalculateMtf(imgArr, pixel_width)
+            # 这里做了一点修改，容忍一定的误差
+            mtfErrCount = 0
             for index in range(len(res.x)-1):
-                if res.y[index] > 1.0000000000000002 or res.y[index] <= 0 or res.y[index]<res.y[index+1]:
+                if res.y[index] > 1.01 or res.y[index] <= 0:
                     mtf_err = 1 #MTF计算错误
+                    break
+                if res.y[index]<res.y[index+1]:
+                    mtfErrCount += 1
+            if(mtfErrCount > 5):
+                mtf_err = 1
             position = positions[i]
-            if (len(position) != 7):
+            if (len(position) != 6):
                 raise ValueError('Positions Error!')
             for row in range(len(imgTuple[i])):
                 for column in range(len(imgTuple[i][row])):
                     if imgTuple[i][row][column] >= 250 or imgTuple[i][row][column] < 0:
                         over_exp_err = 1 #过曝错误
-            if res.mtfAtNyquist<2 or res.mtfAtNyquist>10:
+            if res.mtfAtNyquist<3 or res.mtfAtNyquist>11:
                 deg_err = 1 #刃边角度错误
             esf = mtf.MTF.GetEdgeSpreadFunctionCrop(imgArr,mtf.Verbosity.NONE)
             top = np.max(esf.rawESF.y) - esf.threshold
@@ -101,22 +103,14 @@ def test_main(imgTuple: tuple, positions: tuple, fileNameTuple: tuple, pixelSize
             for index in range(len(esf.interpESF.y)-1):
                 if esf.interpESF.y[index] <= top and esf.interpESF.y[index] >=bot and esf.interpESF.y[index] > esf.interpESF.y[index+1]:
                    edge_estim_err = 1 #直线拟合异常
-
-            diredict ={0:"ne",1:"nw",2:"sw",3:"se"}
-            dire = diredict[position[5]]
             if deg_err or mtf_err or over_exp_err or edge_estim_err:
                 errRoiId.append(i)
-                find_err = 1
-#            isSaveFlag = int(position[6])
-#            if not isSaveFlag:
-#               continue #错误暂时不保存 该算法模块需添加一个是否需要保存数据的参数 来应对错误数据的是否保存
             tmpData = [res.mtfAtNyquist, position[0], position[1], position[2], position[3], over_exp_err, edge_estim_err, mtf_err, deg_err, position[4], position[5]]
             tmpData.extend(res.y)
             print(len(tmpData))
             data.append(tmpData)
         print(len(data))
         return errRoiId, data
-#        return errRoiId
 
     except Exception as e:
         print("----------error in test_main---------", flush = True)

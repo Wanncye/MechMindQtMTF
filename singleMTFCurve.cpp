@@ -10,6 +10,7 @@ singleMTFCurve::singleMTFCurve(const QString roiName, const roiRect& roi,
     : QWidget(parent), ui(new Ui::singleMTFCurve)
 {
     ui->setupUi(this);
+    setWindowTitle(QStringLiteral("%1 Detail").arg(roiName));
     // 设置图
     ui->chartView->resetChartSeries();
     ui->chartView->setChartTitle(roiName);

@@ -110,8 +110,7 @@ QVector<int> callPython(const std::vector<std::vector<std::vector<double>>>& img
 
 QVector<int> callPythonReturnMTFData(const std::vector<std::vector<std::vector<double>>>& img,
                                      const std::vector<std::vector<double>>& information,
-                                     const std::string& saveFileName,
-                                     const std::string& imgFileName, const double& pixelSize,
+                                     const double& pixelSize,
                                      std::vector<std::vector<double>>& mtfData,
                                      std::vector<std::vector<double>>& mtfControlData)
 {
@@ -163,17 +162,13 @@ QVector<int> callPythonReturnMTFData(const std::vector<std::vector<std::vector<d
             PyTuple_SET_ITEM(item, j, PyFloat_FromDouble(information[i][j]));
         PyTuple_SET_ITEM(informationArray, i, item);
     }
-    PyObject* fileName = PyTuple_New(2);
-    PyTuple_SET_ITEM(fileName, 0, PyBytes_FromString(saveFileName.data()));
-    PyTuple_SET_ITEM(fileName, 1, PyBytes_FromString(imgFileName.data()));
 
     PyObject* pixelWidth = PyTuple_New(1);
     PyTuple_SET_ITEM(pixelWidth, 0, PyFloat_FromDouble(pixelSize));
-    PyObject* pArgs = PyTuple_New(4);
+    PyObject* pArgs = PyTuple_New(3);
     PyTuple_SetItem(pArgs, 0, imgArray);
     PyTuple_SetItem(pArgs, 1, informationArray);
-    PyTuple_SetItem(pArgs, 2, fileName);
-    PyTuple_SetItem(pArgs, 3, pixelWidth);
+    PyTuple_SetItem(pArgs, 2, pixelWidth);
     PyObject* pRet = PyObject_CallObject(pFunc, pArgs);
     Py_DECREF(pArgs);
     Py_DECREF(pFunc);

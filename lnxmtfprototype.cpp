@@ -164,16 +164,14 @@ bool LNXMTFPrototype::calcMTF(const std::vector<roiRect>& roiRects, const QStrin
     for (const auto& roi : qAsConst(roiRects)) {
         information.push_back({roi.rect.topLeft().x(), roi.rect.topLeft().y(),
                                roi.rect.bottomRight().x(), roi.rect.bottomRight().y(), roi.offset,
-                               (double)roi.d, (double)isSave});
+                               (double)roi.d});
     }
 
     const std::string imgFileName =
         imgPath.mid(imgPath.lastIndexOf(QLatin1String("/")) + 1).toStdString();
     print(imgPath.mid(imgPath.lastIndexOf(QLatin1String("/")) + 1));
-    const std::string savefileName = "result.xlsx";
-    QVector<int> errRoiId(callPythonReturnMTFData(img, information, imgFileName, savefileName,
-                                                  ui->pixelSize->value(), mMtfData,
-                                                  mMtfControlInformation));
+    QVector<int> errRoiId(callPythonReturnMTFData(img, information, ui->pixelSize->value(),
+                                                  mMtfData, mMtfControlInformation));
     return errRoiId.isEmpty();
 }
 void LNXMTFPrototype::showSingleMTFCurve(int index)
@@ -211,7 +209,7 @@ void LNXMTFPrototype::showTable()
     }
     for (int i = 0; i < mMtfControlInformation.size(); i++) {
         grayError[i] = mMtfControlInformation[i][5];
-        edgeErro[i] = mMtfControlInformation[i][6];
+        edgeErro[i] = mMtfControlInformation[i][8];
         mtfError[i] = mMtfControlInformation[i][7];
     }
     QTableWidgetItem* item;
