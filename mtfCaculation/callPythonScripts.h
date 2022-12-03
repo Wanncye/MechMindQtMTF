@@ -1,6 +1,9 @@
 #pragma once
 #include <QDebug>
-
+#pragma push_macro("slots")
+#undef slots
+#include <Python.h>
+#pragma pop_macro("slots")
 void PythonInit();
 
 QVector<int> callPython(const std::vector<std::vector<std::vector<double>>>& img,
@@ -18,3 +21,7 @@ QVector<int> PythonTest(const std::vector<std::vector<std::vector<double>>>& img
                         const std::vector<std::vector<double>>& information,
                         const double& pixelSize, std::vector<std::vector<double>>& mtfData,
                         std::vector<std::vector<double>>& mtfControlData);
+
+QVector<int> callPythonReturnMTFDataOnlyArgs(PyObject* pArgs,
+                                     std::vector<std::vector<double>>& mtfData,
+                                     std::vector<std::vector<double>>& mtfControlData);

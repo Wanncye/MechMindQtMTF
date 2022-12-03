@@ -1,6 +1,6 @@
 #include "lnxmtfprototype.h"
 #include "labelpaintertool.h"
-#include "singleMTFCurve.h".h "
+#include "singleMTFCurve.h"
 #include "ui_lnxmtfprototype.h"
 #include "mtfCaculation/callPythonScripts.h"
 
@@ -40,14 +40,6 @@ LNXMTFPrototype::LNXMTFPrototype(QWidget* parent) : QWidget(parent), ui(new Ui::
     ui->NW01->setChecked(true);
     ui->NW02->setChecked(true);
     ui->NW05->setChecked(true);
-    ui->feild01->setAxisTitle("x", "MTF");
-    ui->feild02->setAxisTitle("x", "MTF");
-    ui->feild05->setAxisTitle("x", "MTF");
-    ui->feild09->setAxisTitle("x", "MTF");
-    ui->feild01->setChartTitle("Field 0.1");
-    ui->feild02->setChartTitle("Field 0.2");
-    ui->feild05->setChartTitle("Field 0.5");
-    ui->feild09->setChartTitle("Field 0.9");
     PythonInit();
 }
 
@@ -152,6 +144,40 @@ std::vector<std::vector<double>> QimageToArrayLNX(const QImage& image)
     return pixelMat;
 }
 
+void preparePythonInputImg(PyObject* pArgs, std::vector<std::vector<std::vector<double>>>& img, std::vector<std::vector<double>>& information, double pixelSize){
+    Py_ssize_t Len = img.size();
+    PyObject* imgArray = PyTuple_New(Len);
+    for (Py_ssize_t i = 0; i < Len; i++) {
+        Py_ssize_t rowLen = img[i].size();
+        PyObject* rowItem = PyTuple_New(rowLen);
+        for (Py_ssize_t j = 0; j < rowLen; j++) {
+            Py_ssize_t colLen = img[i][j].size();
+            PyObject* item = PyTuple_New(colLen);
+            for (Py_ssize_t k = 0; k < colLen; k++) {
+                PyTuple_SET_ITEM(item, k, PyFloat_FromDouble(img[i][j][k]));
+            }
+            PyTuple_SET_ITEM(rowItem, j, item);
+        }
+        PyTuple_SET_ITEM(imgArray, i, rowItem);
+    }
+
+    Py_ssize_t rowLen = information.size();
+    PyObject* informationArray = PyTuple_New(rowLen);
+    for (Py_ssize_t i = 0; i < rowLen; i++) {
+        Py_ssize_t colLen = information[i].size();
+        PyObject* item = PyTuple_New(colLen);
+        for (Py_ssize_t j = 0; j < colLen; j++)
+            PyTuple_SET_ITEM(item, j, PyFloat_FromDouble(information[i][j]));
+        PyTuple_SET_ITEM(informationArray, i, item);
+    }
+
+    PyObject* pixelWidth = PyTuple_New(1);
+    PyTuple_SET_ITEM(pixelWidth, 0, PyFloat_FromDouble(pixelSize));
+    PyTuple_SetItem(pArgs, 0, imgArray);
+    PyTuple_SetItem(pArgs, 1, informationArray);
+    PyTuple_SetItem(pArgs, 2, pixelWidth);
+}
+
 // 调用python脚本计算roiRects里面的MTF值
 bool LNXMTFPrototype::calcMTF(const std::vector<roiRect>& roiRects, const QString& imgPath,
                               bool isSave)
@@ -166,11 +192,11 @@ bool LNXMTFPrototype::calcMTF(const std::vector<roiRect>& roiRects, const QStrin
                                roi.rect.bottomRight().x(), roi.rect.bottomRight().y(), roi.offset,
                                (double)roi.d});
     }
+    PyObject* pArgs = PyTuple_New(3);
+    print(pArgs);
+    preparePythonInputImg(pArgs, img, information, ui->pixelSize->value());
 
-    const std::string imgFileName =
-        imgPath.mid(imgPath.lastIndexOf(QLatin1String("/")) + 1).toStdString();
-    print(imgPath.mid(imgPath.lastIndexOf(QLatin1String("/")) + 1));
-    QVector<int> errRoiId(callPythonReturnMTFData(img, information, ui->pixelSize->value(),
+    QVector<int> errRoiId(callPythonReturnMTFDataOnlyArgs(pArgs,
                                                   mMtfData, mMtfControlInformation));
     return errRoiId.isEmpty();
 }
@@ -178,14 +204,6 @@ void LNXMTFPrototype::showSingleMTFCurve(int index)
 {
     print(index);
     print(ui->errorTable->horizontalHeaderItem(index)->text());
-    const auto singleMTFData = mMtfData[index];
-    const auto singleRect = mFieldRects[index];
-    const auto singleMTFControlInformation = mMtfControlInformation[index];
-
-    auto singleMTFCurveWindows =
-        new singleMTFCurve(ui->errorTable->horizontalHeaderItem(index)->text(), singleRect,
-                           singleMTFData, singleMTFControlInformation, ui->frequency->value());
-    singleMTFCurveWindows->show();
 }
 void LNXMTFPrototype::showTable()
 {
@@ -209,7 +227,7 @@ void LNXMTFPrototype::showTable()
     }
     for (int i = 0; i < mMtfControlInformation.size(); i++) {
         grayError[i] = mMtfControlInformation[i][5];
-        edgeErro[i] = mMtfControlInformation[i][8];
+        edgeErro[i] = mMtfControlInformation[i][6];
         mtfError[i] = mMtfControlInformation[i][7];
     }
     QTableWidgetItem* item;
@@ -246,29 +264,6 @@ void LNXMTFPrototype::showTable()
 void LNXMTFPrototype::showChart()
 {
     // 设置图
-    ui->feild01->resetChartSeries(genSeriesNames(getSpecificFieldRect(0.1)));
-    ui->feild02->resetChartSeries(genSeriesNames(getSpecificFieldRect(0.2)));
-    ui->feild05->resetChartSeries(genSeriesNames(getSpecificFieldRect(0.5)));
-    ui->feild09->resetChartSeries(genSeriesNames(getSpecificFieldRect(0.9)));
-    for (int i = 0; i < mMtfData.size(); ++i) {
-        if (mFieldRects[i].offset == 0.1) {
-            ui->feild01->setValues(genSeriesName(mFieldRects[i]), mMtfData[i]);
-            ui->feild01->setRangeY(0, maxYAxies);
-            ui->feild01->scaleAxisX();
-        } else if (mFieldRects[i].offset == 0.2) {
-            ui->feild02->setValues(genSeriesName(mFieldRects[i]), mMtfData[i]);
-            ui->feild02->setRangeY(0, maxYAxies);
-            ui->feild02->scaleAxisX();
-        } else if (mFieldRects[i].offset == 0.5) {
-            ui->feild05->setValues(genSeriesName(mFieldRects[i]), mMtfData[i]);
-            ui->feild05->setRangeY(0, maxYAxies);
-            ui->feild05->scaleAxisX();
-        } else if (mFieldRects[i].offset == 0.9) {
-            ui->feild09->setValues(genSeriesName(mFieldRects[i]), mMtfData[i]);
-            ui->feild09->setRangeY(0, maxYAxies);
-            ui->feild09->scaleAxisX();
-        }
-    }
 }
 
 // 感觉这个可以写成STL的算法
@@ -295,13 +290,13 @@ void LNXMTFPrototype::on_calcMTF_clicked()
 
     // 模拟一下MTF数据， 将他显示出来
     // 这个事要拿另外的线程来做，要不然会阻塞IO
-    calcMTF(mFieldRects, "D:/验收软件支持/沙姆MTF/03.bmp", false);
+    if(calcMTF(mFieldRects, "D:/验收软件支持/沙姆MTF/03.bmp", false))
+        return;
 
-    if (mMtfData.empty()) {
+    if (mMtfData.empty() || mMtfControlInformation.empty()) {
         warnMoveROI();
         return;
     }
-    showChart();
     showTable();
     //    }
 }

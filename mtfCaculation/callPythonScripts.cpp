@@ -12,7 +12,7 @@ void PythonInit()
 {
     if (!Py_IsInitialized()) {
         // 1.初始化Python解释器，这是调用操作的第一步
-        Py_SetPythonHome(L"C:/Users/mech-mind/anaconda3/envs/qt");
+        Py_SetPythonHome(L"/Users/wanncye/opt/anaconda3/envs/qt");
         Py_Initialize();
         if (!Py_IsInitialized()) {
             print("Initial Python failed!");
@@ -20,7 +20,7 @@ void PythonInit()
             print("Initial sucess!");
             PyEval_InitThreads();
             PyRun_SimpleString("import sys");
-            PyRun_SimpleString("sys.path.append('D:/MechMindQtMTF/mtfCaculation')");
+            PyRun_SimpleString("sys.path.append('/Users/wanncye/Desktop/MTF/mtfCaculation')");
             PyEval_ReleaseThread(PyThreadState_Get());
         }
     }
@@ -31,14 +31,12 @@ QVector<int> callPython(const std::vector<std::vector<std::vector<double>>>& img
                         const std::string& saveFileName, const std::string& imgFileName,
                         const double& pixelSize)
 {
-    class PyThreadStateLock PyThreadLock;
-    //    Py_SetPythonHome(L"/Users/wanncye/opt/anaconda3/envs/qt/bin"); // MAC
-    Py_SetPythonHome(L"C:/Users/mech-mind/anaconda3/envs/qt"); // Windows
+    PyThreadStateLock PyThreadLock;
+        Py_SetPythonHome(L"/Users/wanncye/opt/anaconda3/envs/qt"); // MAC
     Py_Initialize();
 
     PyRun_SimpleString("import sys");
-    //    PyRun_SimpleString("sys.path.append('/Users/wanncye/Desktop/MTF/mtfCaculation')"); // MAC
-    PyRun_SimpleString("sys.path.append('D:/MechMindQtMTF/mtfCaculation')"); // Windows
+        PyRun_SimpleString("sys.path.append('/Users/wanncye/Desktop/MTF/mtfCaculation')"); // MAC
 
     PyObject* pModule = PyImport_ImportModule("example");
     if (pModule == nullptr) {
@@ -116,13 +114,6 @@ QVector<int> callPythonReturnMTFData(const std::vector<std::vector<std::vector<d
 {
     class PyThreadStateLock PyThreadLock;
     print("callPythonReturnMTFData");
-    //    Py_SetPythonHome(L"/Users/wanncye/opt/anaconda3/envs/qt/bin"); // MAC
-    Py_SetPythonHome(L"C:/Users/mech-mind/anaconda3/envs/qt"); // Windows
-    Py_Initialize();
-
-    PyRun_SimpleString("import sys");
-    //    PyRun_SimpleString("sys.path.append('/Users/wanncye/Desktop/MTF/mtfCaculation')"); // MAC
-    PyRun_SimpleString("sys.path.append('D:/MechMindQtMTF/mtfCaculation')"); // Windows
 
     PyObject* pModule = PyImport_ImportModule("example");
     if (pModule == nullptr) {
@@ -223,6 +214,84 @@ QVector<int> callPythonReturnMTFData(const std::vector<std::vector<std::vector<d
     Py_DECREF(pRet);
     Py_DECREF(errorRet);
     Py_DECREF(dataRet);
+    print("---------------------return callPythonReturnMTFData-------------------");
+    return errRoiId;
+}
+
+QVector<int> callPythonReturnMTFDataOnlyArgs(PyObject* pArgs,
+                                     std::vector<std::vector<double>>& mtfData,
+                                     std::vector<std::vector<double>>& mtfControlData)
+{
+    class PyThreadStateLock PyThreadLock;
+    print("callPythonReturnMTFDataOnlyArgs");
+
+    PyObject* pModule = PyImport_ImportModule("example");
+    if (pModule == nullptr) {
+        qDebug() << "Module example not found";
+        // return false;
+    }
+
+    PyObject* pFunc = PyObject_GetAttrString(pModule, "test_main");
+    if (pFunc == nullptr) {
+        qDebug() << "Module test_main not found";
+        // return false;
+    }
+
+    PyObject* pRet = PyObject_CallObject(pFunc, pArgs);
+    Py_DECREF(pArgs);
+    print(pArgs);
+    Py_DECREF(pFunc);
+    Py_DECREF(pModule);
+
+    QVector<int> errRoiId;
+    if (PyTuple_Check(pRet)) {
+        PyObject *errorRet = nullptr, *dataRet = nullptr;
+        print("return is tuple");
+        errorRet = PyTuple_GetItem(pRet, 0);
+        int sizeOfList = PyList_Size(errorRet);
+        for (int i = 0; i < sizeOfList; i++) {
+            PyObject* listItem = PyList_GetItem(errorRet, i);
+            errRoiId.push_back(PyLong_AsLong(listItem));
+            Py_DECREF(listItem);
+        }
+        print(errRoiId.size());
+
+        dataRet = PyTuple_GetItem(pRet, 1);
+        int roiNum = PyList_Size(dataRet);
+        print(roiNum);
+        mtfData.resize(roiNum);
+        mtfControlData.resize(roiNum);
+        for (int i = 0; i < roiNum; ++i) {
+            PyObject* roiMTFData = PyList_GetItem(dataRet, i);
+            int roiMTFLen = PyList_Size(roiMTFData);
+            int controlInformationLen = 11;
+            std::vector<double> controlVec(controlInformationLen, 0.);
+            for (int j = 0; j < controlInformationLen; ++j) {
+                PyObject* listElement = PyList_GetItem(roiMTFData, j);
+                controlVec[j] = PyFloat_AsDouble(listElement);
+//                Py_DECREF(listElement);
+            }
+            mtfControlData[i] = controlVec;
+            std::vector<double> roiMTFVec(roiMTFLen - controlInformationLen, 0.);
+            for (int j = controlInformationLen; j < roiMTFLen; ++j) {
+                PyObject* listElement = PyList_GetItem(roiMTFData, j);
+                roiMTFVec[j - controlInformationLen] = PyFloat_AsDouble(listElement);
+//                Py_DECREF(listElement);
+            }
+            mtfData[i] = roiMTFVec;
+            Py_DECREF(roiMTFData);
+        }
+        print(mtfData.size());
+        Py_DECREF(errorRet);
+        Py_DECREF(dataRet);
+    } else if (PyList_Check(pRet)) {
+        // list的情况
+        print("return is List");
+    } else if (PyNumber_Check(pRet)) {
+        // 数字的情况
+        print("return is Number");
+    }
+    Py_DECREF(pRet);
     print("---------------------return callPythonReturnMTFData-------------------");
     return errRoiId;
 }

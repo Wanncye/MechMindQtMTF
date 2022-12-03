@@ -13,10 +13,7 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout" stretch="2,1">
-   <item>
-    <widget class="MTFProfilerLineChart" name="chartView"/>
-   </item>
+  <layout class="QHBoxLayout" name="horizontalLayout" stretch="1">
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
@@ -54,13 +51,6 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>MTFProfilerLineChart</class>
-   <extends>QGraphicsView</extends>
-   <header>ProfilerChartView.h</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

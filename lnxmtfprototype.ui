@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1095</width>
+    <width>1104</width>
     <height>770</height>
    </rect>
   </property>
@@ -84,8 +84,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>251</width>
-             <height>620</height>
+             <width>258</width>
+             <height>610</height>
             </rect>
            </property>
            <property name="layoutDirection">
@@ -119,7 +119,7 @@
     </layout>
    </item>
    <item>
-    <layout class="QVBoxLayout" name="operatorPart" stretch="1,10,2,1">
+    <layout class="QVBoxLayout" name="operatorPart" stretch="1,2,1">
      <property name="sizeConstraint">
       <enum>QLayout::SetMaximumSize</enum>
      </property>
@@ -384,39 +384,6 @@
       </widget>
      </item>
      <item>
-      <widget class="QGroupBox" name="groupBox_2">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="tabletTracking">
-        <bool>false</bool>
-       </property>
-       <property name="title">
-        <string>ROI MTF Curve</string>
-       </property>
-       <property name="flat">
-        <bool>false</bool>
-       </property>
-       <layout class="QGridLayout" name="gridLayout">
-        <item row="1" column="0">
-         <widget class="MTFProfilerLineChart" name="feild05"/>
-        </item>
-        <item row="0" column="0">
-         <widget class="MTFProfilerLineChart" name="feild01"/>
-        </item>
-        <item row="0" column="1">
-         <widget class="MTFProfilerLineChart" name="feild02"/>
-        </item>
-        <item row="1" column="1">
-         <widget class="MTFProfilerLineChart" name="feild09"/>
-        </item>
-       </layout>
-      </widget>
-     </item>
-     <item>
       <widget class="QGroupBox" name="groupBox">
        <property name="title">
         <string>ROI Calculate Result Table</string>
@@ -464,11 +431,6 @@
   </layout>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>MTFProfilerLineChart</class>
-   <extends>QGraphicsView</extends>
-   <header>ProfilerChartView.h</header>
-  </customwidget>
   <customwidget>
    <class>LabelPainterTool</class>
    <extends>QLabel</extends>
