@@ -9,7 +9,7 @@ class LNXMTFPrototype;
 }
 
 struct roiRect;
-
+// tset
 class LNXMTFPrototype : public QWidget
 {
     Q_OBJECT
