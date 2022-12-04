@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1095</width>
+    <width>1187</width>
     <height>770</height>
    </rect>
   </property>
@@ -119,7 +119,10 @@
     </layout>
    </item>
    <item>
-    <layout class="QVBoxLayout" name="operatorPart" stretch="1,10,2,1">
+    <layout class="QVBoxLayout" name="operatorPart" stretch="2,20,1,1">
+     <property name="spacing">
+      <number>0</number>
+     </property>
      <property name="sizeConstraint">
       <enum>QLayout::SetMaximumSize</enum>
      </property>

@@ -24,17 +24,22 @@ public slots:
     void on_zoomIn_clicked();
     void on_zoomOut_clicked();
     void on_editRoi_clicked(bool checked);
+    void on_stopCalc_clicked();
 
     void recieveFieldRects(std::vector<roiRect>& rects);
     void showSingleMTFCurve(int index);
+    void timerWorker();
 
 private:
     void clear();
-    bool calcMTF(const std::vector<roiRect>& roiRects, const QString& imgPath, bool isSave);
+    bool calcMTF(const std::vector<roiRect>& roiRects);
     void showTable();
     void showChart();
     std::vector<roiRect> getSpecificFieldRect(double offset);
 
+    QImage mImg;
+
+    QTimer* mTimer;
     Ui::LNXMTFPrototype* ui;
     std::vector<roiRect> mFieldRects;
     std::vector<std::vector<double>> mMtfData;

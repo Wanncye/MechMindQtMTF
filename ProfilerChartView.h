@@ -13,7 +13,7 @@ public:
 
     void resetChartSeries();
     void resetChartSeries(const QColor& color);
-    void resetChartSeries(const QStringList& names);
+    void resetChartSeries(const QStringList& names, bool colorRandom = true);
     void resetChartSeries(const QStringList& names, const std::vector<QColor>& colors);
 
     void setAxisTitle(const QString& titleX, const QString& titleY);

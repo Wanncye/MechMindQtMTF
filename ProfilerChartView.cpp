@@ -58,10 +58,10 @@ inline pair<qreal, qreal> findMinMaxY(
     return {minMaxPt.first.y(), minMaxPt.second.y()};
 }
 
-vector<QColor> genMultiColors(int count)
+vector<QColor> genMultiColors(int count, bool random = true)
 {
     const int len = 360 / count;
-    const int h = rand() % len;
+    const int h = random ? rand() % len : 0;
     vector<QColor> rgbColors;
     for (int i = 0; i < count; ++i)
         rgbColors.emplace_back(QColor::fromHsv(h + len * i, 255, 255));
@@ -80,13 +80,13 @@ void ProfilerChartView::resetChartSeries(const QColor& color)
     resetChartSeries({QString::fromLatin1(kDefaultSeries)}, {color});
 }
 
-void ProfilerChartView::resetChartSeries(const QStringList& names)
+void ProfilerChartView::resetChartSeries(const QStringList& names, bool colorRandom)
 {
     if (names.isEmpty()) {
         resetChartSeries();
         return;
     }
-    const auto& colors = genMultiColors(names.size());
+    const auto& colors = genMultiColors(names.size(), colorRandom);
     resetChartSeries(names, colors);
 }
 
