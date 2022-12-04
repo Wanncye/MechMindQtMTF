@@ -81,6 +81,8 @@ public:
     std::vector<roiRect> getRoIRects(const QImage& img, const QVector<QVector<bool>>& roiPos,
                                      const int& imgW, const int& imgH, const double& roiW,
                                      const double& roiH);
+    void resetRoIRect(const QImage& img, std::vector<roiRect>& roiRects, const double& roiW,
+                      const double& roiH);
     inline QPointF ToRelativePos(const QPointF& pos);
     // 将矩形从以左上角为原点的坐标系坐标，转化为以图像中心为原点的坐标系坐标
     inline QRectF rectToRelativePos(const QRectF& rect);

@@ -199,6 +199,15 @@ std::vector<roiRect> myRectProcessor::getRoIRects(const QImage& img,
     return roiRects;
 }
 
+void myRectProcessor::resetRoIRect(const QImage& img, std::vector<roiRect>& roiRects,
+                                   const double& roiW, const double& roiH)
+{
+    for (auto& roi : roiRects) {
+        roi.rect = fromCenterPoint(roi.rect.center(), roiW, roiH);
+        roi.img = img.copy(rectToAbsolutePos(roi.rect).toRect());
+    }
+}
+
 QPointF myRectProcessor::ToRelativePos(const QPointF& pos)
 {
     return (pos + QPointF(mOffsetW - mXPtInterval, mOffsetH - mYPtInterval)) / mZoomValue;

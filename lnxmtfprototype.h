@@ -29,12 +29,15 @@ public slots:
     void recieveFieldRects(std::vector<roiRect>& rects);
     void showSingleMTFCurve(int index);
     void timerWorker();
+    void resetROIField(int state);
+    void valueChangedResetROIField(double val);
 
 private:
     void clear();
-    bool calcMTF(const std::vector<roiRect>& roiRects);
+    void calcMTF(const std::vector<roiRect>& roiRects);
     void showTable();
     void showChart();
+    void updateRoiRectByParameters(int state);
     std::vector<roiRect> getSpecificFieldRect(double offset);
 
     QImage mImg;

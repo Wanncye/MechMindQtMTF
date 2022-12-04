@@ -69,14 +69,36 @@ LNXMTFPrototype::LNXMTFPrototype(QWidget* parent) : QWidget(parent), ui(new Ui::
     ui->zoomIn->setEnabled(false);
     ui->zoomOut->setEnabled(false);
     ui->editRoi->setEnabled(false);
+    ui->calcMTF->setEnabled(false);
+    // checkbox的选择之类的得放在connect之前
+    ui->NW01->setChecked(true);
+    ui->NW02->setChecked(true);
+    ui->NW05->setChecked(true);
     connect(ui->imgView, &LabelPainterTool::sendFieldRects, this,
             &LNXMTFPrototype::recieveFieldRects);
     connect(ui->errorTable->horizontalHeader(), &QHeaderView::sectionDoubleClicked, this,
             &LNXMTFPrototype::showSingleMTFCurve);
     connect(mTimer, &QTimer::timeout, this, &LNXMTFPrototype::timerWorker);
-    ui->NW01->setChecked(true);
-    ui->NW02->setChecked(true);
-    ui->NW05->setChecked(true);
+    connect(ui->NW01, &QCheckBox::stateChanged, this, &LNXMTFPrototype::resetROIField);
+    connect(ui->NW02, &QCheckBox::stateChanged, this, &LNXMTFPrototype::resetROIField);
+    connect(ui->NW05, &QCheckBox::stateChanged, this, &LNXMTFPrototype::resetROIField);
+    connect(ui->NW09, &QCheckBox::stateChanged, this, &LNXMTFPrototype::resetROIField);
+    connect(ui->EN01, &QCheckBox::stateChanged, this, &LNXMTFPrototype::resetROIField);
+    connect(ui->EN02, &QCheckBox::stateChanged, this, &LNXMTFPrototype::resetROIField);
+    connect(ui->EN05, &QCheckBox::stateChanged, this, &LNXMTFPrototype::resetROIField);
+    connect(ui->EN09, &QCheckBox::stateChanged, this, &LNXMTFPrototype::resetROIField);
+    connect(ui->WS01, &QCheckBox::stateChanged, this, &LNXMTFPrototype::resetROIField);
+    connect(ui->WS02, &QCheckBox::stateChanged, this, &LNXMTFPrototype::resetROIField);
+    connect(ui->WS05, &QCheckBox::stateChanged, this, &LNXMTFPrototype::resetROIField);
+    connect(ui->WS09, &QCheckBox::stateChanged, this, &LNXMTFPrototype::resetROIField);
+    connect(ui->SE01, &QCheckBox::stateChanged, this, &LNXMTFPrototype::resetROIField);
+    connect(ui->SE02, &QCheckBox::stateChanged, this, &LNXMTFPrototype::resetROIField);
+    connect(ui->SE05, &QCheckBox::stateChanged, this, &LNXMTFPrototype::resetROIField);
+    connect(ui->SE09, &QCheckBox::stateChanged, this, &LNXMTFPrototype::resetROIField);
+    connect(ui->roiWidth, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this,
+            &LNXMTFPrototype::valueChangedResetROIField);
+    connect(ui->roiHeight, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this,
+            &LNXMTFPrototype::valueChangedResetROIField);
     ui->feild01->setAxisTitle("x", "MTF");
     ui->feild02->setAxisTitle("x", "MTF");
     ui->feild05->setAxisTitle("x", "MTF");
@@ -85,10 +107,77 @@ LNXMTFPrototype::LNXMTFPrototype(QWidget* parent) : QWidget(parent), ui(new Ui::
     ui->feild02->setChartTitle("Field 0.2");
     ui->feild05->setChartTitle("Field 0.5");
     ui->feild09->setChartTitle("Field 0.9");
+    ui->fieldChoose->setEnabled(false);
     PythonInit();
 }
 
-LNXMTFPrototype::~LNXMTFPrototype() { delete ui; }
+void LNXMTFPrototype::resetROIField(int state)
+{
+    print(state);
+    updateRoiRectByParameters(state);
+}
+
+void LNXMTFPrototype::valueChangedResetROIField(double val)
+{
+    print(val);
+    updateRoiRectByParameters(3);
+}
+
+void LNXMTFPrototype::updateRoiRectByParameters(int state)
+{
+    QVector<QVector<bool>> roiBool = {
+        {ui->EN01->isChecked(), ui->EN02->isChecked(), false, false, ui->EN05->isChecked(), false,
+         false, false, ui->EN09->isChecked()},
+        {ui->NW01->isChecked(), ui->NW02->isChecked(), false, false, ui->NW05->isChecked(), false,
+         false, false, ui->NW09->isChecked()},
+        {ui->WS01->isChecked(), ui->WS02->isChecked(), false, false, ui->WS05->isChecked(), false,
+         false, false, ui->WS09->isChecked()},
+        {ui->SE01->isChecked(), ui->SE02->isChecked(), false, false, ui->SE05->isChecked(), false,
+         false, false, ui->SE09->isChecked()}};
+
+    auto tmpFieldRects = ui->imgView->getRectProcessor()->getRoIRects(
+        mImg, roiBool, mImg.width(), mImg.height(), ui->roiWidth->value(), ui->roiHeight->value());
+    QStringList fieldRectNames;
+    if (state == 1)
+        // 用于初始化
+        mFieldRects = tmpFieldRects;
+    else if (state == 2) {
+        // 增加ROI，即选中ROI，其实一次只选择一个
+        fieldRectNames = genSeriesNames(mFieldRects);
+        for (int i = 0; i < tmpFieldRects.size(); i++) {
+            if (!fieldRectNames.contains(genSeriesName(tmpFieldRects[i])))
+                mFieldRects.push_back(tmpFieldRects[i]);
+        }
+    } else if (state == 0) {
+        // 删除ROI，取消选中ROI，其实一次只选择一个
+        fieldRectNames = genSeriesNames(tmpFieldRects);
+        for (auto i = mFieldRects.begin(); i != mFieldRects.end(); i++) {
+            print(genSeriesName(*i));
+            if (!fieldRectNames.contains(genSeriesName(*i))) {
+                i = mFieldRects.erase(i);
+                break;
+            }
+        }
+    } else if (state == 3) {
+        // 改变ROI长宽
+        // 这些函数写的很混乱，需要统一一下风格
+        ui->imgView->getRectProcessor()->resetRoIRect(mImg, mFieldRects, ui->roiWidth->value(),
+                                                      ui->roiHeight->value());
+    } else
+        return;
+
+    ui->imgView->addFieldRectangle(mFieldRects);
+    ui->feild01->resetChartSeries(genSeriesNames(getSpecificFieldRect(0.1)), false);
+    ui->feild02->resetChartSeries(genSeriesNames(getSpecificFieldRect(0.2)), false);
+    ui->feild05->resetChartSeries(genSeriesNames(getSpecificFieldRect(0.5)), false);
+    ui->feild09->resetChartSeries(genSeriesNames(getSpecificFieldRect(0.9)), false);
+}
+
+LNXMTFPrototype::~LNXMTFPrototype()
+{
+    delete ui;
+    mTimer->stop();
+}
 
 void LNXMTFPrototype::on_loadImg_clicked()
 {
@@ -115,28 +204,14 @@ void LNXMTFPrototype::on_loadImg_clicked()
 
     // 要在图上画选择的视场
     ui->imgView->setRectProcessor(new myRectProcessor);
-    QVector<QVector<bool>> roiBool = {
-        {ui->EN01->isChecked(), ui->EN02->isChecked(), false, false, ui->EN05->isChecked(), false,
-         false, false, ui->EN09->isChecked()},
-        {ui->NW01->isChecked(), ui->NW02->isChecked(), false, false, ui->NW05->isChecked(), false,
-         false, false, ui->NW09->isChecked()},
-        {ui->WS01->isChecked(), ui->WS02->isChecked(), false, false, ui->WS05->isChecked(), false,
-         false, false, ui->WS09->isChecked()},
-        {ui->SE01->isChecked(), ui->SE02->isChecked(), false, false, ui->SE05->isChecked(), false,
-         false, false, ui->SE09->isChecked()}};
-    mFieldRects = ui->imgView->getRectProcessor()->getRoIRects(
-        mImg, roiBool, mImg.width(), mImg.height(), ui->roiWidth->value(), ui->roiHeight->value());
-    ui->imgView->addFieldRectangle(mFieldRects);
-
-    ui->feild01->resetChartSeries(genSeriesNames(getSpecificFieldRect(0.1)), false);
-    ui->feild02->resetChartSeries(genSeriesNames(getSpecificFieldRect(0.2)), false);
-    ui->feild05->resetChartSeries(genSeriesNames(getSpecificFieldRect(0.5)), false);
-    ui->feild09->resetChartSeries(genSeriesNames(getSpecificFieldRect(0.9)), false);
+    updateRoiRectByParameters(1);
 
     // 使能编辑图片相关按钮
     ui->zoomIn->setEnabled(true);
     ui->zoomOut->setEnabled(true);
     ui->editRoi->setEnabled(true);
+    ui->fieldChoose->setEnabled(true);
+    ui->calcMTF->setEnabled(true);
 }
 
 std::vector<std::vector<double>> QimageToArrayLNX(const QImage& image)
@@ -159,7 +234,7 @@ std::vector<std::vector<double>> QimageToArrayLNX(const QImage& image)
 }
 
 // 调用python脚本计算roiRects里面的MTF值
-bool LNXMTFPrototype::calcMTF(const std::vector<roiRect>& roiRects)
+void LNXMTFPrototype::calcMTF(const std::vector<roiRect>& roiRects)
 {
     std::vector<std::vector<std::vector<double>>> img;
     for (const auto& roi : qAsConst(roiRects)) {
@@ -171,9 +246,8 @@ bool LNXMTFPrototype::calcMTF(const std::vector<roiRect>& roiRects)
                                roi.rect.bottomRight().x(), roi.rect.bottomRight().y(), roi.offset,
                                (double)roi.d});
     }
-    QVector<int> errRoiId(callPythonReturnMTFData(img, information, ui->pixelSize->value(),
-                                                  mMtfData, mMtfControlInformation));
-    return errRoiId.isEmpty();
+    callPythonReturnMTFData(img, information, ui->pixelSize->value(), mMtfData,
+                            mMtfControlInformation);
 }
 void LNXMTFPrototype::showSingleMTFCurve(int index)
 {
@@ -294,6 +368,7 @@ void LNXMTFPrototype::timerWorker()
     calcMTF(mFieldRects);
     if (mMtfData.empty() || mMtfControlInformation.empty()) {
         warnMoveROI();
+        mTimer->stop();
         return;
     }
     showChart();
