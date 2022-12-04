@@ -200,14 +200,12 @@ QVector<int> callPythonReturnMTFData(const std::vector<std::vector<std::vector<d
             for (int j = 0; j < controlInformationLen; ++j) {
                 PyObject* listElement = PyList_GetItem(roiMTFData, j);
                 controlVec[j] = PyFloat_AsDouble(listElement);
-                Py_DECREF(listElement);
             }
             mtfControlData[i] = controlVec;
             std::vector<double> roiMTFVec(roiMTFLen - controlInformationLen, 0.);
             for (int j = controlInformationLen; j < roiMTFLen; ++j) {
                 PyObject* listElement = PyList_GetItem(roiMTFData, j);
                 roiMTFVec[j - controlInformationLen] = PyFloat_AsDouble(listElement);
-                Py_DECREF(listElement);
             }
             mtfData[i] = roiMTFVec;
             Py_DECREF(roiMTFData);
