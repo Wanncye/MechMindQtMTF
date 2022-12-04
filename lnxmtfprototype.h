@@ -25,6 +25,7 @@ public slots:
     void on_zoomOut_clicked();
     void on_editRoi_clicked(bool checked);
     void on_stopCalc_clicked();
+    void on_saveToExcel_clicked();
 
     void recieveFieldRects(std::vector<roiRect>& rects);
     void showSingleMTFCurve(int index);

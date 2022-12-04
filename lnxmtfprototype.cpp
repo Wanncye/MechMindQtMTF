@@ -22,6 +22,18 @@ inline void warnMoveROI()
                          LNXMTFPrototype::tr("Failed to calcuate MTF, please edit(move) ROI."));
 }
 
+inline void warnSaveExcel()
+{
+    QMessageBox::warning(nullptr, LNXMTFPrototype::tr("Save Failure"),
+                         LNXMTFPrototype::tr("Failed to save, please check."));
+}
+
+inline void saveSucess(const QString& path)
+{
+    QMessageBox::information(nullptr, "Save Sucessfully",
+                             QStringLiteral("Excel has save to %1").arg(path));
+}
+
 QString genSeriesName(const roiRect& rect)
 {
     QString dst;
@@ -363,6 +375,33 @@ void LNXMTFPrototype::on_stopCalc_clicked()
     ui->calcMTF->setEnabled(true);
 }
 
+void LNXMTFPrototype::on_saveToExcel_clicked()
+{
+    const auto selectedDirPath = QFileDialog::getExistingDirectory(
+        this, tr("Select Saving Directory"), QCoreApplication::applicationDirPath(),
+        QFileDialog::ShowDirsOnly);
+    if (selectedDirPath.isEmpty())
+        return;
+    QString saveFileName = QStringLiteral("%1/%2.xlsx").arg(selectedDirPath, ui->fileName->text());
+    std::vector<std::vector<double>> saveData(
+        mMtfData.size(),
+        std::vector<double>(mMtfData[0].size() + mMtfControlInformation[0].size(), 0));
+    for (int i = 0; i < mMtfControlInformation.size(); i++) {
+        for (int j = 0; j < mMtfControlInformation[0].size(); j++) {
+            saveData[i][j] = mMtfControlInformation[i][j];
+        }
+    }
+    for (int i = 0; i < mMtfData.size(); i++) {
+        for (int j = 0; j < mMtfData[0].size(); j++) {
+            saveData[i][j + mMtfControlInformation[0].size()] = mMtfData[i][j];
+        }
+    }
+    if (!callPythonSaveExcel((std::string)saveFileName.toLocal8Bit(), saveData))
+        warnSaveExcel();
+    else
+        saveSucess(saveFileName);
+}
+
 void LNXMTFPrototype::timerWorker()
 {
     calcMTF(mFieldRects);
@@ -373,6 +412,8 @@ void LNXMTFPrototype::timerWorker()
     }
     showChart();
     showTable();
+    ui->fileName->setText(
+        QStringLiteral("MTF_%1").arg(QDateTime::currentDateTime().toString("h.m.s-yyyy.M.d")));
 }
 
 void LNXMTFPrototype::on_calcMTF_clicked()

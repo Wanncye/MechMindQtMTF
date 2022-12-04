@@ -129,9 +129,9 @@ void callPythonReturnMTFData(const std::vector<std::vector<std::vector<double>>>
         // return false;
     }
 
-    PyObject* pFunc = PyObject_GetAttrString(pModule, "test_main");
+    PyObject* pFunc = PyObject_GetAttrString(pModule, "calcMTF");
     if (pFunc == nullptr) {
-        qDebug() << "Module test_main not found";
+        qDebug() << "Module calcMTF not found";
         // return false;
     }
     Py_ssize_t Len = img.size();
@@ -206,13 +206,11 @@ void callPythonReturnMTFData(const std::vector<std::vector<std::vector<double>>>
     print("---------------------return callPythonReturnMTFData-------------------");
 }
 
-QVector<int> PythonTest(const std::vector<std::vector<std::vector<double>>>& img,
-                        const std::vector<std::vector<double>>& information,
-                        const double& pixelSize, std::vector<std::vector<double>>& mtfData,
-                        std::vector<std::vector<double>>& mtfControlData)
+bool callPythonSaveExcel(const std::string& saveFileName,
+                         const std::vector<std::vector<double>>& saveData)
 {
     class PyThreadStateLock PyThreadLock;
-    print("callPythonReturnMTFData");
+    print("callPythonSaveExcel");
     Py_SetPythonHome(L"C:/Users/mech-mind/anaconda3/envs/qt"); // Windows
     Py_Initialize();
 
@@ -222,18 +220,37 @@ QVector<int> PythonTest(const std::vector<std::vector<std::vector<double>>>& img
     PyObject* pModule = PyImport_ImportModule("example");
     if (pModule == nullptr) {
         qDebug() << "Module example not found";
-        // return false;
+        return false;
     }
 
-    PyObject* pFunc = PyObject_GetAttrString(pModule, "myFun");
+    PyObject* pFunc = PyObject_GetAttrString(pModule, "writeToExcelFile");
     if (pFunc == nullptr) {
-        qDebug() << "Module test_main not found";
-        // return false;
+        qDebug() << "Module writeToExcelFile not found";
+        return false;
     }
 
-    PyObject* pRet = PyObject_CallObject(pFunc, nullptr);
+    PyObject* fileName = PyTuple_New(1);
+    PyTuple_SET_ITEM(fileName, 0, PyBytes_FromString(saveFileName.data()));
 
+    Py_ssize_t rowLen = saveData.size();
+    PyObject* saveDataArray = PyTuple_New(rowLen);
+    for (Py_ssize_t i = 0; i < rowLen; i++) {
+        Py_ssize_t colLen = saveData[i].size();
+        PyObject* item = PyTuple_New(colLen);
+        for (Py_ssize_t j = 0; j < colLen; j++)
+            PyTuple_SET_ITEM(item, j, PyFloat_FromDouble(saveData[i][j]));
+        PyTuple_SET_ITEM(saveDataArray, i, item);
+    }
+
+    PyObject* pArgs = PyTuple_New(2);
+    PyTuple_SetItem(pArgs, 0, fileName);
+    PyTuple_SetItem(pArgs, 1, saveDataArray);
+
+    PyObject* pRet = PyObject_CallObject(pFunc, pArgs);
+    bool isSucess;
+    PyArg_Parse(pRet, "b", &isSucess);
+    Py_DECREF(pArgs);
     Py_DECREF(pRet);
-    print("---------------------return callPythonReturnMTFData-------------------");
-    return {};
+    print("---------------------return callPythonSaveExcel-------------------");
+    return isSucess;
 }

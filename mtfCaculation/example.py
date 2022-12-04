@@ -3,8 +3,6 @@ import numpy as np
 import mtf as mtf
 import pandas as pd
 import os
-import matplotlib.pyplot as plt
-import pylab
 
 def readExcelFile(fileName: str, imgName) -> list:
     df = pd.read_excel(fileName, sheet_name=imgName)
@@ -15,53 +13,43 @@ def readExcelFile(fileName: str, imgName) -> list:
         roiMTFValueList.append(list(df.iloc[:,col]))
     return roiMTFValueList
 
-def writeToExcelFile(fileName: str, data: tuple, imgName: str='') -> bool:
-    # pandas的版本得是1.2.5
-#    absPath = "/Users/wanncye/Desktop/MTF"
-    absPath = "D://projects_build/MTF_build"
-    fileName = os.path.join(absPath, fileName)
-    if len(data) == 0:
-        return False
-    if len(imgName) == 0:
-        imgName = 'Sheet1'
-
+def writeToExcelFile(fileName: str, data: tuple) -> bool:
+    # 将data保存在fileName中
+    # tips：pandas的版本得是1.2.5
+    sheetName = 'Sheet1'
     try:
         Attributes = ['deg', 'x1', 'y1', 'x2', 'y2', 'over exposure error', 'edge estimation error', 'MTF error', 'deg error', 'visual field', 'direction']
-        Attributes.extend([str(i) for i in range(len(data[0]) - len(Attributes))]) #data[0]含义
-
+        Attributes.extend([str(i) for i in range(len(data[0]) - len(Attributes))])
         columns = ['ROI '] * len(data)
         formatData = dict()
         for index in range(len(data)):
             columns[index] += str(index)
             formatData[columns[index]] = data[index]
-
         df = pd.DataFrame(formatData, index=Attributes)
-        print("current path:", os.getcwd())
+        fileName = str(fileName[0], "gbk")
+        print(fileName, flush=True);
         if os.path.exists(fileName):
             writer = pd.ExcelWriter(fileName, mode='a', engine='openpyxl')
             wb = writer.book
-            if imgName in wb:
-                print("remove sheet:", imgName)
-                wb.remove(wb[imgName])
-                print("wb.sheetnames:", wb.sheetnames)
+            if sheetName in wb:
+                wb.remove(wb[sheetName])
         else:
             writer = pd.ExcelWriter(fileName, mode='w', engine='openpyxl')
-
-        df.to_excel(writer, sheet_name=imgName)
+        df.to_excel(writer, sheet_name=sheetName)
         writer.save()
-        print("in writeToExcelFile fileName",fileName)
         writer.close()
+        print("writeToExcelFile: data sucess save to ",fileName, flush=True)
         return True
 
     except Exception as e:
-        print("error! in writeToExcelFile")
-        print(e)
+        print("error in writeToExcelFile", flush=True)
+        print(e, flush=True)
         return False
 
 def myFun():
     print("in python myFun", flush = True)
 
-def test_main(imgTuple: tuple, positions: tuple, pixelSize: float):
+def calcMTF(imgTuple: tuple, positions: tuple, pixelSize: float):
     print("start test_main", flush = True)
     try:
         imgLen = len(imgTuple)
@@ -112,9 +100,7 @@ def test_main(imgTuple: tuple, positions: tuple, pixelSize: float):
                    edge_estim_err = 1 #直线拟合异常
             tmpData = [res.mtfAtNyquist, position[0], position[1], position[2], position[3], over_exp_err, edge_estim_err, mtf_err, deg_err, position[4], position[5]]
             tmpData.extend(res.y)
-            print(len(tmpData))
             data.append(tmpData)
-        print(len(data))
         return data
 
     except Exception as e:
