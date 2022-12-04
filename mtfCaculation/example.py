@@ -69,7 +69,6 @@ def test_main(imgTuple: tuple, positions: tuple, pixelSize: float):
         pixel_width = pixelSize[0]
 
         data = list()
-        errRoiId = list()
         for i in range(imgLen):
             over_exp_err = 0 #过曝
             edge_estim_err = 0  #刃边估计错误
@@ -77,7 +76,16 @@ def test_main(imgTuple: tuple, positions: tuple, pixelSize: float):
             deg_err = 0       #刃边角度不对，此算法要求应在3到11度
             imgArr = np.asarray(imgTuple[i],dtype=np.double) / 255
             imgArr = mtf.Helper.CorrectImageOrientation(imgArr) #保证图片暗面朝上 与原模块处理一样
-            res = mtf.MTF.CalculateMtf(imgArr, pixel_width)
+            res = list()
+            position = positions[i]
+            try:
+                res = mtf.MTF.CalculateMtf(imgArr, pixel_width)
+            except Exception as e:
+                print(e, flush = True)
+                tmpData = [0, position[0], position[1], position[2], position[3], 1, 1, 1, 1, position[4], position[5]]
+                tmpData.extend([0]*100)
+                data.append(tmpData)
+                continue
             # 这里做了一点修改，容忍一定的误差
             mtfErrCount = 0
             for index in range(len(res.x)-1):
@@ -88,7 +96,6 @@ def test_main(imgTuple: tuple, positions: tuple, pixelSize: float):
                     mtfErrCount += 1
             if(mtfErrCount > 5):
                 mtf_err = 1
-            position = positions[i]
             if (len(position) != 6):
                 raise ValueError('Positions Error!')
             for row in range(len(imgTuple[i])):
@@ -103,14 +110,12 @@ def test_main(imgTuple: tuple, positions: tuple, pixelSize: float):
             for index in range(len(esf.interpESF.y)-1):
                 if esf.interpESF.y[index] <= top and esf.interpESF.y[index] >=bot and esf.interpESF.y[index] > esf.interpESF.y[index+1]:
                    edge_estim_err = 1 #直线拟合异常
-            if deg_err or mtf_err or over_exp_err or edge_estim_err:
-                errRoiId.append(i)
             tmpData = [res.mtfAtNyquist, position[0], position[1], position[2], position[3], over_exp_err, edge_estim_err, mtf_err, deg_err, position[4], position[5]]
             tmpData.extend(res.y)
             print(len(tmpData))
             data.append(tmpData)
         print(len(data))
-        return errRoiId, data
+        return data
 
     except Exception as e:
         print("----------error in test_main---------", flush = True)

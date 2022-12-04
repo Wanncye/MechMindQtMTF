@@ -108,11 +108,10 @@ QVector<int> callPython(const std::vector<std::vector<std::vector<double>>>& img
     return errRoiId;
 }
 
-QVector<int> callPythonReturnMTFData(const std::vector<std::vector<std::vector<double>>>& img,
-                                     const std::vector<std::vector<double>>& information,
-                                     const double& pixelSize,
-                                     std::vector<std::vector<double>>& mtfData,
-                                     std::vector<std::vector<double>>& mtfControlData)
+void callPythonReturnMTFData(const std::vector<std::vector<std::vector<double>>>& img,
+                             const std::vector<std::vector<double>>& information,
+                             const double& pixelSize, std::vector<std::vector<double>>& mtfData,
+                             std::vector<std::vector<double>>& mtfControlData)
 {
     class PyThreadStateLock PyThreadLock;
     print("callPythonReturnMTFData");
@@ -174,26 +173,14 @@ QVector<int> callPythonReturnMTFData(const std::vector<std::vector<std::vector<d
     Py_DECREF(pFunc);
     Py_DECREF(pModule);
 
-    QVector<int> errRoiId;
-    PyObject *errorRet = nullptr, *dataRet = nullptr;
-    if (PyTuple_Check(pRet)) {
-        print("return is tuple");
-        errorRet = PyTuple_GetItem(pRet, 0);
-        int sizeOfList = PyList_Size(errorRet);
-        for (int i = 0; i < sizeOfList; i++) {
-            PyObject* listItem = PyList_GetItem(errorRet, i);
-            errRoiId.push_back(PyLong_AsLong(listItem));
-            Py_DECREF(listItem);
-        }
-        print(errRoiId.size());
-
-        dataRet = PyTuple_GetItem(pRet, 1);
-        int roiNum = PyList_Size(dataRet);
+    if (PyList_Check(pRet)) {
+        print("return is list");
+        int roiNum = PyList_Size(pRet);
         print(roiNum);
         mtfData.resize(roiNum);
         mtfControlData.resize(roiNum);
         for (int i = 0; i < roiNum; ++i) {
-            PyObject* roiMTFData = PyList_GetItem(dataRet, i);
+            PyObject* roiMTFData = PyList_GetItem(pRet, i);
             int roiMTFLen = PyList_Size(roiMTFData);
             int controlInformationLen = 11;
             std::vector<double> controlVec(controlInformationLen, 0.);
@@ -211,18 +198,12 @@ QVector<int> callPythonReturnMTFData(const std::vector<std::vector<std::vector<d
             Py_DECREF(roiMTFData);
         }
         print(mtfData.size());
-    } else if (PyList_Check(pRet)) {
-        // list的情况
-        print("return is List");
     } else if (PyNumber_Check(pRet)) {
         // 数字的情况
         print("return is Number");
     }
     Py_DECREF(pRet);
-    Py_DECREF(errorRet);
-    Py_DECREF(dataRet);
     print("---------------------return callPythonReturnMTFData-------------------");
-    return errRoiId;
 }
 
 QVector<int> PythonTest(const std::vector<std::vector<std::vector<double>>>& img,

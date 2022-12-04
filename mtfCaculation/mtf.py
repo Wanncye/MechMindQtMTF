@@ -359,6 +359,8 @@ class MTF:
         imgArr = Helper.CorrectImageOrientation(imgArr)
         edgeImg = cv2.Canny(np.uint8(imgArr*255), 40, 90, L2gradient=True)
         line = np.argwhere(edgeImg == 255)
+        if line.shape[0] == 0:
+            raise Exception('GetEdgeSpreadFunctionCrop Line Empty!')
         edgePoly = np.polyfit(line[:,1],line[:,0],1)
         angle = math.degrees(math.atan(-edgePoly[0]))
 
