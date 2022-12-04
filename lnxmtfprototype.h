@@ -39,6 +39,7 @@ private:
     void showTable();
     void showChart();
     void updateRoiRectByParameters(int state);
+    void closeEvent(QCloseEvent*) override;
     std::vector<roiRect> getSpecificFieldRect(double offset);
 
     QImage mImg;

@@ -187,9 +187,11 @@ void LNXMTFPrototype::updateRoiRectByParameters(int state)
 
 LNXMTFPrototype::~LNXMTFPrototype()
 {
+    // 为什么关闭的时候没有调用析构函数？
     delete ui;
-    mTimer->stop();
 }
+
+void LNXMTFPrototype::closeEvent(QCloseEvent*) { mTimer->stop(); }
 
 void LNXMTFPrototype::on_loadImg_clicked()
 {
