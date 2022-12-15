@@ -91,6 +91,39 @@ void LNXMTFPrototype::on_loadImg_clicked()
     ui->editRoi->setEnabled(true);
 }
 
+void LNXMTFPrototype::on_loadTVImg_clicked()
+{
+    // clear操作
+    clear();
+    // 选择图片界面
+    QFileDialog fileDlg(this);
+    fileDlg.setWindowTitle(QStringLiteral("Choose Pictures"));
+    const QStringList qstrFilters(QStringLiteral("Image files(*.jpg *.png *.bmp)"));
+    fileDlg.setNameFilters(qstrFilters);
+    QImage img;
+    if (fileDlg.exec() == QDialog::Rejected)
+        return;
+    QStringList imgPath = fileDlg.selectedFiles();
+    if (imgPath.isEmpty())
+        return;
+
+    mTVImgPath = imgPath.front();
+    // 设置图片到label标签中
+    if (!img.load(imgPath.front())) {
+        QMessageBox::information(this, tr("Open Failed"), tr("Open image Failed!"));
+        return;
+    }
+    ui->imgView->setImg(img);
+
+    ui->zoomIn->setEnabled(true);
+    ui->zoomOut->setEnabled(true);
+    ui->editRoi->setEnabled(true);
+}
+
+void LNXMTFPrototype::on_calcTVBtn_clicked(){
+
+}
+
 QString genSeriesName(const roiRect& rect)
 {
     QString dst;
@@ -204,6 +237,15 @@ void LNXMTFPrototype::showSingleMTFCurve(int index)
 {
     print(index);
     print(ui->errorTable->horizontalHeaderItem(index)->text());
+    const auto singleMTFData = mMtfData[index];
+    const auto singleRect = mFieldRects[index];
+    const auto singleMTFControlInformation = mMtfControlInformation[index];
+
+    auto singleMTFCurveWindows =
+        new singleMTFCurve(ui->errorTable->horizontalHeaderItem(index)->text(), singleRect,
+                           singleMTFData, singleMTFControlInformation, ui->frequency->value());
+    singleMTFCurveWindows->show();
+
 }
 void LNXMTFPrototype::showTable()
 {

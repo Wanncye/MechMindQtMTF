@@ -20,6 +20,8 @@ public:
 
 public slots:
     void on_loadImg_clicked(); // 加载图片
+    void on_loadTVImg_clicked();
+    void on_calcTVBtn_clicked();
     void on_calcMTF_clicked();
     void on_zoomIn_clicked();
     void on_zoomOut_clicked();
@@ -35,6 +37,7 @@ private:
     void showChart();
     std::vector<roiRect> getSpecificFieldRect(double offset);
 
+    QString mTVImgPath;
     Ui::LNXMTFPrototype* ui;
     std::vector<roiRect> mFieldRects;
     std::vector<std::vector<double>> mMtfData;

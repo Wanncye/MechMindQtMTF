@@ -27,51 +27,6 @@ struct roiRect
     QRectF rect;
 };
 
-class myRectProcessor;
-
-class LabelPainterTool : public QLabel
-{
-    Q_OBJECT
-public:
-    explicit LabelPainterTool(QWidget* parent = nullptr);
-    ~LabelPainterTool() override;
-
-    void paintEvent(QPaintEvent* event) override;        //绘制矩形
-    void mousePressEvent(QMouseEvent* event) override;   //鼠标按下
-    void mouseMoveEvent(QMouseEvent* event) override;    //鼠标移动
-    void mouseReleaseEvent(QMouseEvent* event) override; //鼠标抬起
-
-    void onZoomInImage(void);
-    void onZoomOutImage(void);
-
-    void addFieldRectangle(std::vector<roiRect>& roiRects);
-
-    void setRectProcessor(myRectProcessor* processor) { mRectProcessor = processor; }
-    void setImg(QImage& img) { mImage = img; }
-    void setOperateMode(const operateMode& op) { mOpMode = op; }
-    void setParentScrollArea(QScrollArea* scrollArea) { mScrollArea = scrollArea; }
-    myRectProcessor* getRectProcessor() { return mRectProcessor; }
-    void clearFieldRect();
-
-signals:
-    void sendFieldRects(std::vector<roiRect>& rects);
-
-private:
-    std::vector<roiRect> mFieldRects; // 十三个视场矩形
-    myRectProcessor* mRectProcessor;
-    QImage mImage;
-
-    // 状态相关
-    bool mPressed = false;
-    operateMode mOpMode = choose;
-    QPointF mMouseStartPoint;
-    QPointF mMouseEndPoint;
-    int mSelectedROIRectIndex; // 用于拖动ROI
-
-    // scrollArea改变大小用
-    QScrollArea* mScrollArea;
-};
-
 class myRectProcessor
 {
 public:
@@ -112,6 +67,50 @@ private:
     double mXPtInterval = 0; // 移动画面的X偏移
     double mYPtInterval = 0; // 移动画面的y偏移
     qreal mZoomValue = 1.0;  // 放大缩小系数
+};
+
+class LabelPainterTool : public QLabel
+{
+    Q_OBJECT
+public:
+    explicit LabelPainterTool(QWidget* parent = nullptr);
+    ~LabelPainterTool() override;
+
+    void paintEvent(QPaintEvent* event) override;        //绘制矩形
+    void mousePressEvent(QMouseEvent* event) override;   //鼠标按下
+    void mouseMoveEvent(QMouseEvent* event) override;    //鼠标移动
+    void mouseReleaseEvent(QMouseEvent* event) override; //鼠标抬起
+
+    void onZoomInImage(void);
+    void onZoomOutImage(void);
+
+    void addFieldRectangle(std::vector<roiRect>& roiRects);
+
+    void setRectProcessor(myRectProcessor* processor) { mRectProcessor = processor; }
+    void setImg(QImage& img) { mImage = img; }
+    QImage getImg() const { return mImage; }
+    void setOperateMode(const operateMode& op) { mOpMode = op; }
+    void setParentScrollArea(QScrollArea* scrollArea) { mScrollArea = scrollArea; }
+    myRectProcessor* getRectProcessor() { return mRectProcessor; }
+    void clearFieldRect();
+
+signals:
+    void sendFieldRects(std::vector<roiRect>& rects);
+
+private:
+    std::vector<roiRect> mFieldRects; // 十三个视场矩形
+    myRectProcessor* mRectProcessor = new myRectProcessor();
+    QImage mImage;
+
+    // 状态相关
+    bool mPressed = false;
+    operateMode mOpMode = choose;
+    QPointF mMouseStartPoint;
+    QPointF mMouseEndPoint;
+    int mSelectedROIRectIndex; // 用于拖动ROI
+
+    // scrollArea改变大小用
+    QScrollArea* mScrollArea;
 };
 
 #endif // MyLabel_H

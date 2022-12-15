@@ -60,12 +60,22 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-
+#QMAKE_APPLE_DEVICE_ARCHS = arm64
 # MAC的环境
 macx: LIBS += -L$$PWD/../../opt/anaconda3/envs/qt/lib/ -lpython3.7m
+#LIBS += /opt/homebrew/Cellar/opencv@3/3.4.16_3//lib/libopencv_*.dylib
+
+macx: LIBS += -L/opt/homebrew/Cellar/opencv@3/3.4.16_3/lib \
+ -lopencv_core \
+ -lopencv_highgui \
+ -lopencv_imgproc \
+ -lopencv_imgcodecs
+
 
 INCLUDEPATH += $$PWD/../../opt/anaconda3/envs/qt/include/python3.7m
 INCLUDEPATH += $$PWD/../../opt/anaconda3/envs/qt/lib/python3.7/site-packages/numpy/core/include
+INCLUDEPATH += /opt/homebrew/Cellar/opencv@3/3.4.16_3/include
+INCLUDEPATH += /opt/homebrew/Cellar/opencv@3/3.4.16_3/include/opencv2
 DEPENDPATH += $$PWD/../../opt/anaconda3/envs/qt/include
 
 # windows下的环境
