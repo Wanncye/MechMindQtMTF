@@ -2,6 +2,7 @@
 #include "danleimtfcalc.h"
 #include "lnxmtfprototype.h"
 #include "mainwindow.h"
+#include "ImageView.h"
 #include "mtfcalc.h"
 
 MainWindow::MainWindow(QWidget *parent)
@@ -29,4 +30,9 @@ void MainWindow::on_danLeiMTFCalc_clicked(){
 void MainWindow::on_lnxPrototype_clicked(){
     auto lnxPrototype = new LNXMTFPrototype();
     lnxPrototype->show();
+}
+
+void MainWindow::on_imgView_clicked(){
+    auto imgView = new ImageView();
+    imgView->show();
 }

@@ -11,28 +11,67 @@ QString genSeriesName(const roiRect& rect);
 
 void LabelPainterTool::paintEvent(QPaintEvent* event)
 {
+//    QPainter painter(this);
+
+//    if (mImage.isNull())
+//        return QWidget::paintEvent(event);
+
+//    const int imgWidth = mImage.width();
+//    const int imgHeight = mImage.height();
+//    const int windowsWidth = this->width();
+//    const int windowsHeight = this->height();
+
+//    // 以左上角为原点，将坐标原点往右下角平移这么多像素
+//    painter.translate(windowsWidth / 2.0 + mXPtInterval,
+//                      windowsHeight / 2.0 + mYPtInterval);
+
+//    painter.scale(mZoomValue, mZoomValue);
+
+//    // windowRect要按当前的坐标系来计算，imgRect要按图片的坐标系计算
+//    // 且这里不能使用QLabel的setPixmap
+//    QRectF windowRect(-windowsWidth / 2.0, -windowsHeight / 2.0, windowsWidth, windowsHeight);
+//    QRectF imgRect(0, 0, imgWidth, imgHeight);
+//    painter.drawPixmap(windowRect, QPixmap::fromImage(mImage), imgRect);
+//    setPixmap(QPixmap::fromImage(mImage));
+
+//    // 视场绘制
+//    painter.setPen(QPen(Qt::red, 1));
+//    for (const auto& roi : mFieldRects) {
+//        painter.drawRect(roi.rect);
+//        painter.drawText(roi.rect, Qt::AlignCenter, genSeriesName(roi));
+//    }
+
+//    // 中心点
+//    painter.drawRect(QRectF(-1, -1, 2, 2));
+
+
+    // 绘制样式
+    QStyleOption opt;
+    opt.init(this);
     QPainter painter(this);
+    style()->drawPrimitive(QStyle::PE_Widget, &opt, &painter, this);
 
     if (mImage.isNull())
         return QWidget::paintEvent(event);
 
-    const int imgWidth = mImage.width();
-    const int imgHeight = mImage.height();
-    const int windowsWidth = this->width();
-    const int windowsHeight = this->height();
+    // 根据窗口计算应该显示的图片的大小
+    int width = mImage.width();
+    int height = mImage.height();
+//    int width = qMin(mImage.width(), this->width());
+//    int height = width * 1.0 / (mImage.width() * 1.0 / mImage.height());
+//    height = qMin(height, this->height());
+//    width = height * 1.0 * (mImage.width() * 1.0 / mImage.height());
 
-    // 以左上角为原点，将坐标原点往右下角平移这么多像素
-    painter.translate(windowsWidth / 2.0 + mRectProcessor->mXPtInterval,
-                      windowsHeight / 2.0 + mRectProcessor->mYPtInterval);
 
-    painter.scale(mRectProcessor->mZoomValue, mRectProcessor->mZoomValue);
+    // 平移
+    painter.translate(this->width() / 2 + mXPtInterval, this->height() / 2 + mYPtInterval);
 
-    // windowRect要按当前的坐标系来计算，imgRect要按图片的坐标系计算
-    // 且这里不能使用QLabel的setPixmap
-    QRectF windowRect(-windowsWidth / 2.0, -windowsHeight / 2.0, windowsWidth, windowsHeight);
-    QRectF imgRect(0, 0, imgWidth, imgHeight);
-    painter.drawPixmap(windowRect, QPixmap::fromImage(mImage), imgRect);
-    setPixmap(QPixmap::fromImage(mImage));
+    // 缩放
+    painter.scale(mZoomValue, mZoomValue);
+
+    // 绘制图像
+    QRect picRect(-width / 2, -height / 2, width, height);
+    painter.drawImage(picRect, mImage);
 
     // 视场绘制
     painter.setPen(QPen(Qt::red, 1));
@@ -45,15 +84,24 @@ void LabelPainterTool::paintEvent(QPaintEvent* event)
     painter.drawRect(QRectF(-1, -1, 2, 2));
 }
 
+void LabelPainterTool::wheelEvent(QWheelEvent *event)
+{
+    int value = event->delta();
+    if (value > 0)
+        onZoomInImage();
+    else
+        onZoomOutImage();
+
+    this->update();
+}
+
 //鼠标按下
 void LabelPainterTool::mousePressEvent(QMouseEvent* event)
 {
+    print("-----mouse press-----");
     mPressed = true;
     mSelectedROIRectIndex = -1;
-    print(event->pos());
-    mMouseStartPoint = mRectProcessor->ToRelativePos(event->pos());
-    print(mMouseStartPoint);
-    print(mRectProcessor->ToAbsolutePos(mMouseStartPoint));
+    mMouseStartPoint = event->pos();
     switch (mOpMode) {
     case choose:
     {
@@ -62,8 +110,13 @@ void LabelPainterTool::mousePressEvent(QMouseEvent* event)
     case edit:
     {
         for (int i = 0; i < mFieldRects.size(); i++) {
-            if (mFieldRects.at(i).rect.contains(mMouseStartPoint)) {
+            print(mMouseStartPoint);
+            QPointF curRelativePos = WidgetToImgRelativePos(mMouseStartPoint);
+            print(curRelativePos);
+            print(mFieldRects.at(i).rect);
+            if (mFieldRects.at(i).rect.contains(curRelativePos)) {
                 mSelectedROIRectIndex = i;
+                print(i);
                 break;
             }
         }
@@ -82,21 +135,24 @@ void LabelPainterTool::mouseMoveEvent(QMouseEvent* event)
         return QWidget::mouseMoveEvent(event);
     setCursor(Qt::CrossCursor);
 
-    QPointF mouseCurrentPos = mRectProcessor->ToRelativePos(event->pos());
+    QPointF mouseCurrentPos = event->pos();
     double xPtInterval = mouseCurrentPos.x() - mMouseStartPoint.x();
     double yPtInterval = mouseCurrentPos.y() - mMouseStartPoint.y();
     mMouseStartPoint = mouseCurrentPos;
     switch (mOpMode) {
     case choose:
+        this->setCursor(Qt::SizeAllCursor);
+        mXPtInterval += xPtInterval;
+        mYPtInterval += yPtInterval;
         break;
     case edit:
     {
         // 移动ROI
         mFieldRects[mSelectedROIRectIndex].rect =
             QRectF(mFieldRects[mSelectedROIRectIndex].rect.topLeft() +
-                       QPointF(xPtInterval, yPtInterval) / mRectProcessor->mZoomValue,
+                       QPointF(xPtInterval, yPtInterval) / mZoomValue,
                    mFieldRects[mSelectedROIRectIndex].rect.bottomRight() +
-                       QPointF(xPtInterval, yPtInterval) / mRectProcessor->mZoomValue);
+                       QPointF(xPtInterval, yPtInterval) / mZoomValue);
         break;
     }
     default:
@@ -109,6 +165,7 @@ void LabelPainterTool::mouseMoveEvent(QMouseEvent* event)
 //鼠标抬起
 void LabelPainterTool::mouseReleaseEvent(QMouseEvent* event)
 {
+    print("-----mouse mouseReleaseEvent-----");
     mPressed = false;
     setCursor(Qt::ArrowCursor);
 
@@ -118,17 +175,13 @@ void LabelPainterTool::mouseReleaseEvent(QMouseEvent* event)
     case edit:
     {
         mFieldRects[mSelectedROIRectIndex].img = mImage.copy(
-            mRectProcessor->rectToAbsolutePos(mFieldRects[mSelectedROIRectIndex].rect).toRect());
-        print(mFieldRects[mSelectedROIRectIndex].rect.width());
-        print(mFieldRects[mSelectedROIRectIndex].rect.height());
-        print(mRectProcessor->rectToAbsolutePos(mFieldRects[mSelectedROIRectIndex].rect).width());
-        print(mRectProcessor->rectToAbsolutePos(mFieldRects[mSelectedROIRectIndex].rect).height());
-        print(mRectProcessor->rectToAbsolutePos(mFieldRects[mSelectedROIRectIndex].rect).toRect());
-
-        mFieldRects[mSelectedROIRectIndex].img.save(
-            "D:/MechMindQtMTF/img/img_" +
+            rectToImgAbsolutePos(mFieldRects[mSelectedROIRectIndex].rect).toRect());
+        print(rectToImgAbsolutePos(mFieldRects[mSelectedROIRectIndex].rect).toRect());
+        if(!mFieldRects[mSelectedROIRectIndex].img.save(
+            "/Users/wanncye/Desktop/MTF/img/img_" +
             QString::number(static_cast<int>(mFieldRects[mSelectedROIRectIndex].d)) +
-            QString::number(mFieldRects[mSelectedROIRectIndex].offset) + ".png");
+            QString::number(mFieldRects[mSelectedROIRectIndex].offset) + ".png"));
+            print("save img roi failed.");
         emit sendFieldRects(mFieldRects);
         break;
     }
@@ -141,18 +194,18 @@ void LabelPainterTool::mouseReleaseEvent(QMouseEvent* event)
 
 void LabelPainterTool::onZoomInImage(void)
 {
-    mRectProcessor->mZoomValue += 0.1;
-    if (mRectProcessor->mZoomValue >= 2) {
-        mRectProcessor->mZoomValue = 2;
+    mZoomValue += 0.1;
+    if (mZoomValue >= 10) {
+        mZoomValue = 10;
     }
     update();
 }
 
 void LabelPainterTool::onZoomOutImage(void)
 {
-    mRectProcessor->mZoomValue -= 0.1;
-    if (mRectProcessor->mZoomValue <= 0.1) {
-        mRectProcessor->mZoomValue = 0.1;
+    mZoomValue -= 0.1;
+    if (mZoomValue <= 0.1) {
+        mZoomValue = 0.1;
     }
     update();
 }
@@ -168,7 +221,7 @@ void LabelPainterTool::addFieldRectangle(std::vector<roiRect>& roiRects)
 void LabelPainterTool::clearFieldRect() { mFieldRects.clear(); }
 
 // 得到的是移动坐标原点至图中心后的矩形ROI
-std::vector<roiRect> myRectProcessor::getRoIRects(const QImage& img,
+std::vector<roiRect> LabelPainterTool::getRoIRects(const QImage& img,
                                                   const QVector<QVector<bool>>& roiPos,
                                                   const int& imgW, const int& imgH,
                                                   const double& roiW, const double& roiH)
@@ -190,7 +243,7 @@ std::vector<roiRect> myRectProcessor::getRoIRects(const QImage& img,
             newRect.d = static_cast<direction>(row);
             newRect.offset = (col + 1) * 0.1;
             newRect.rect = fromCenterPoint(points[row] * newRect.offset * mZoomValue, roiW, roiH);
-            newRect.img = img.copy(rectToAbsolutePos(newRect.rect).toRect());
+            newRect.img = img.copy(rectToImgAbsolutePos(newRect.rect).toRect());
             newRect.img.save("D:/MechMindQtMTF/img/img_" + QString::number(row) + "_" +
                              QString::number(col) + ".png");
             roiRects.push_back(newRect);
@@ -199,26 +252,28 @@ std::vector<roiRect> myRectProcessor::getRoIRects(const QImage& img,
     return roiRects;
 }
 
-QPointF myRectProcessor::ToRelativePos(const QPointF& pos)
+QPointF LabelPainterTool::WidgetToImgRelativePos(const QPointF& pos)
 {
-    return (pos + QPointF(mOffsetW - mXPtInterval, mOffsetH - mYPtInterval)) / mZoomValue;
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    return (pos + QPointF(-this->width() / 2 - mXPtInterval, -this->height() / 2 - mYPtInterval)) / mZoomValue;
 }
-QPointF myRectProcessor::ToAbsolutePos(const QPointF& pos)
+QPointF LabelPainterTool::ToImgAbsolutePos(const QPointF& pos)
 {
-    return pos * mZoomValue - QPointF(mOffsetW, mOffsetH);
-}
-
-QRectF myRectProcessor::rectToRelativePos(const QRectF& rect)
-{
-    return QRectF{ToRelativePos(rect.topLeft()), ToRelativePos(rect.bottomRight())};
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    return pos - QPointF(mOffsetW, mOffsetH);
 }
 
-QRectF myRectProcessor::rectToAbsolutePos(const QRectF& rect)
+QRectF LabelPainterTool::rectToRelativePos(const QRectF& rect)
 {
-    return QRectF{ToAbsolutePos(rect.topLeft()), ToAbsolutePos(rect.bottomRight())};
+    return QRectF{WidgetToImgRelativePos(rect.topLeft()), WidgetToImgRelativePos(rect.bottomRight())};
 }
 
-QRectF myRectProcessor::fromCenterPoint(const QPointF& centerPoint, double width, double height)
+QRectF LabelPainterTool::rectToImgAbsolutePos(const QRectF& rect)
+{
+    return QRectF{ToImgAbsolutePos(rect.topLeft()), ToImgAbsolutePos(rect.bottomRight())};
+}
+
+QRectF LabelPainterTool::fromCenterPoint(const QPointF& centerPoint, double width, double height)
 {
     return {centerPoint.x() - width / 2.0, centerPoint.y() - height / 2.0, width, height};
 };

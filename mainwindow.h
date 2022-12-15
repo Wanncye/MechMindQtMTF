@@ -19,6 +19,7 @@ public slots:
     void on_mtfCalc_clicked();
     void on_danLeiMTFCalc_clicked();
     void on_lnxPrototype_clicked();
+    void on_imgView_clicked();
 
 private:
     Ui::MainWindow *ui;

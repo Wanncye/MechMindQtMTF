@@ -21,6 +21,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
 #    ProfilerChartView.cpp \
+    ImageView.cpp \
     danleimtfcalc.cpp \
     labelpaintertool.cpp \
     lnxmtfprototype.cpp \
@@ -34,6 +35,7 @@ SOURCES += \
 
 HEADERS += \
 #    ProfilerChartView.h \
+    ImageView.h \
     danleimtfcalc.h \
     danleimtfcalc.h \
     labelpaintertool.h \

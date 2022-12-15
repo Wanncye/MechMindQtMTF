@@ -66,11 +66,9 @@ void LNXMTFPrototype::on_loadImg_clicked()
         QMessageBox::information(this, tr("Open Failed"), tr("Open image Failed!"));
         return;
     }
-    ui->imgView->setParentScrollArea(ui->scrollArea); // 这句先留着，后续修改scrollAreabug的时候用
     ui->imgView->setImg(img);
 
     // 要在图上画选择的视场
-    ui->imgView->setRectProcessor(new myRectProcessor);
     QVector<QVector<bool>> roiBool = {
         {ui->EN01->isChecked(), ui->EN02->isChecked(), false, false, ui->EN05->isChecked(), false,
          false, false, ui->EN09->isChecked()},
@@ -80,7 +78,7 @@ void LNXMTFPrototype::on_loadImg_clicked()
          false, false, ui->WS09->isChecked()},
         {ui->SE01->isChecked(), ui->SE02->isChecked(), false, false, ui->SE05->isChecked(), false,
          false, false, ui->SE09->isChecked()}};
-    mFieldRects = ui->imgView->getRectProcessor()->getRoIRects(
+    mFieldRects = ui->imgView->getRoIRects(
         img, roiBool, img.width(), img.height(), ui->roiWidth->value(), ui->roiHeight->value());
 
     ui->imgView->addFieldRectangle(mFieldRects);
